@@ -32,7 +32,7 @@ export const PROVIDERS: Record<ProviderId, ProviderConfig> = {
   "google-ai-studio": {
     id: "google-ai-studio",
     name: "Google AI Studio",
-    description: "Direct access to Gemini and Imagen models",
+    description: "Direct access to Gemini, Imagen and Nano Banana models",
     category: "image",
     apiKeyPlaceholder: "AIza...",
     apiKeyPrefix: "AIza",
@@ -42,6 +42,12 @@ export const PROVIDERS: Record<ProviderId, ProviderConfig> = {
     supportsModelListing: false,
     defaultModel: "gemini-2.0-flash-exp",
     models: [
+      {
+        id: "nano-banana-pro",
+        name: "Nano Banana Pro",
+        description: "Google's most advanced image model built on Gemini 3 Pro",
+        capabilities: { textToImage: true, imageToImage: true },
+      },
       {
         id: "gemini-2.0-flash-exp",
         name: "Gemini 2.0 Flash Experimental",

@@ -18,17 +18,17 @@
 
 ---
 
-## The Story
+## Why I Built This
 
-Tired of juggling between Midjourney, DALL-E, Fal.ai, and a dozen other AI image services? Each with their own interface, pricing model, and learning curve?
+I wanted to use **Nano Banana Pro** — Google's insanely good new image model. The problem? Running it through services like Fal.ai or Higgsfield costs money. Not a lot, but it adds up, and it felt unnecessary when Google AI Studio offers free API access.
 
-**OPENLLMPIX** was born from a simple frustration: there had to be a better way.
+But Google AI Studio's interface? Not my thing.
 
-Instead of locking you into a single provider, OPENLLMPIX gives you **one unified dashboard** to access all major AI image generation APIs. Bring your own API keys, switch between providers with a single click, and keep your generation history organized — all without your sensitive credentials ever touching a server.
+So I built **OPENLLMPIX** — a clean, simple dashboard where I can use Nano Banana Pro (and other models) with my own API keys. No middleman fees, no clunky UI. Just prompt, generate, done.
 
-This is the **open-source community edition**. No accounts, no tracking, no BS. Just clone, configure your API keys, and start creating.
+This is the **open-source version** — no accounts, no tracking, no server-side storage. Your API keys stay encrypted in your browser, and requests go directly to the providers.
 
-> **Want the full experience?** Check out [openllmpix.com](https://openllmpix.com) for the hosted version with cloud sync, team collaboration, and optional managed API access.
+> **Want the hosted version?** Check out [openllmpix.com](https://openllmpix.com) for cloud sync, team features, and optional managed API access.
 
 ---
 
@@ -84,11 +84,11 @@ That's it. Start generating.
 
 | Provider | Models | Modes | Get API Key |
 |----------|--------|-------|-------------|
+| **Google AI Studio** | Nano Banana Pro, Gemini 2.0 Flash, Imagen 3 | Text-to-Image, Image-to-Image* | [aistudio.google.com](https://aistudio.google.com) |
 | **OpenRouter** | Gemini 2.0 Flash, Gemini 2.5 Flash Preview | Text-to-Image, Image-to-Image | [openrouter.ai](https://openrouter.ai) |
-| **Google AI Studio** | Imagen 3, Imagen 3 Fast, Gemini 2.0 Flash | Text-to-Image, Image-to-Image* | [aistudio.google.com](https://aistudio.google.com) |
 | **Fal.ai** | FLUX Pro 1.1, FLUX Schnell, FLUX Dev, FLUX LoRA | Text-to-Image | [fal.ai](https://fal.ai) |
 
-*Imagen models support text-to-image only, Gemini models support both modes.
+*Imagen models support text-to-image only, Gemini and Nano Banana models support both modes.
 
 More providers coming soon. PRs welcome!
 
@@ -100,8 +100,8 @@ More providers coming soon. PRs welcome!
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
 │                 │     │                 │     │                 │
 │   Your Browser  │────▶│   Provider API  │────▶│  Generated Image│
-│                 │     │  (OpenRouter,   │     │                 │
-│  API Key stored │     │   Google, Fal)  │     │  Stored locally │
+│                 │     │  (Google, Fal,  │     │                 │
+│  API Key stored │     │   OpenRouter)   │     │  Stored locally │
 │  encrypted here │     │                 │     │  in browser     │
 │                 │     │                 │     │                 │
 └─────────────────┘     └─────────────────┘     └─────────────────┘
