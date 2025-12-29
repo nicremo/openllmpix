@@ -1,46 +1,147 @@
-# OPENLLMPIX
+<p align="center">
+  <img src="public/next.svg" alt="OPENLLMPIX" width="120" />
+</p>
 
-Open Source AI image generation dashboard using Next.js and various AI providers (OpenRouter, Google AI Studio, Fal.ai).
+<h1 align="center">OPENLLMPIX</h1>
+
+<p align="center">
+  <strong>The open-source AI image generation dashboard that puts you in control.</strong>
+</p>
+
+<p align="center">
+  <a href="https://openllmpix.com">Live Demo</a> •
+  <a href="#features">Features</a> •
+  <a href="#quick-start">Quick Start</a> •
+  <a href="#providers">Providers</a> •
+  <a href="#deployment">Deployment</a>
+</p>
+
+---
+
+## The Story
+
+Tired of juggling between Midjourney, DALL-E, Fal.ai, and a dozen other AI image services? Each with their own interface, pricing model, and learning curve?
+
+**OPENLLMPIX** was born from a simple frustration: there had to be a better way.
+
+Instead of locking you into a single provider, OPENLLMPIX gives you **one unified dashboard** to access all major AI image generation APIs. Bring your own API keys, switch between providers with a single click, and keep your generation history organized — all without your sensitive credentials ever touching a server.
+
+This is the **open-source community edition**. No accounts, no tracking, no BS. Just clone, configure your API keys, and start creating.
+
+> **Want the full experience?** Check out [openllmpix.com](https://openllmpix.com) for the hosted version with cloud sync, team collaboration, and optional managed API access.
+
+---
 
 ## Features
 
-- **Security First**: API keys are stored in browser `localStorage` and sent directly to providers via CORS. No sensitive keys touch the application server.
-- **Provider Support**:
-  - OpenRouter (FLUX, Stable Diffusion, etc.)
-  - Google AI Studio (Imagen)
-  - Fal.ai
-- **Local History**: Generation history is persisted in browser localStorage.
-- **Modern Stack**: Next.js 16, Tailwind CSS 4, TypeScript, React 19.
+- **One Dashboard, All Providers** — Access FLUX, Stable Diffusion, Imagen, and more from a single interface
+- **Privacy First** — API keys stay in your browser's localStorage and are sent directly to providers. Zero server-side storage.
+- **Instant Switching** — Compare outputs across different models with one prompt
+- **Local History** — Your generations are saved locally, always accessible, always private
+- **Modern Stack** — Built with Next.js 15, React 19, Tailwind CSS 4, and TypeScript
+- **Self-Hostable** — Deploy to Vercel, Netlify, or your own server in minutes
 
-## Setup
+---
 
-1.  **Clone the repo**:
-    ```bash
-    git clone https://github.com/your-username/openllmpix.git
-    cd openllmpix
-    ```
+## Quick Start
 
-2.  **Install dependencies**:
-    ```bash
-    npm install
-    ```
+```bash
+# Clone the repository
+git clone https://github.com/nicremo/openllmpix.git
+cd openllmpix
 
-3.  **Run Dev Server**:
-    ```bash
-    npm run dev
-    ```
+# Install dependencies
+npm install
 
-4.  **Configure API Keys**: Open the app in your browser and click the Settings button to add your API keys for:
-    - OpenRouter
-    - Google AI Studio
-    - Fal.ai
+# Start the development server
+npm run dev
+```
 
-## Deployment (Vercel)
+Open [http://localhost:3000](http://localhost:3000), click the **Settings** icon, and add your API keys.
 
-1.  Push your code to GitHub.
-2.  Import the project in [Vercel](https://vercel.com).
-3.  Deploy! (No environment variables needed - API keys are stored client-side)
+That's it. Start generating.
+
+---
+
+## Providers
+
+| Provider | Models | Get API Key |
+|----------|--------|-------------|
+| **OpenRouter** | FLUX Pro, FLUX Schnell, Stable Diffusion XL, and 20+ more | [openrouter.ai](https://openrouter.ai) |
+| **Google AI Studio** | Imagen 3, Imagen 3 Fast | [aistudio.google.com](https://aistudio.google.com) |
+| **Fal.ai** | FLUX, Stable Diffusion, ControlNet models | [fal.ai](https://fal.ai) |
+
+More providers coming soon. PRs welcome!
+
+---
+
+## Deployment
+
+### Vercel (Recommended)
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/nicremo/openllmpix)
+
+1. Click the button above
+2. Deploy
+3. Done — no environment variables needed!
+
+### Self-Hosted
+
+```bash
+npm run build
+npm start
+```
+
+Or use Docker:
+
+```bash
+docker build -t openllmpix .
+docker run -p 3000:3000 openllmpix
+```
+
+---
+
+## OPENLLMPIX vs. The Competition
+
+| Feature | OPENLLMPIX | Fal.ai | Higgsfield | Midjourney |
+|---------|------------|--------|------------|------------|
+| Open Source | ✅ | ❌ | ❌ | ❌ |
+| Multi-Provider | ✅ | ❌ | ❌ | ❌ |
+| Bring Your Own Keys | ✅ | ❌ | ❌ | ❌ |
+| Self-Hostable | ✅ | ❌ | ❌ | ❌ |
+| No Account Required | ✅ | ❌ | ❌ | ❌ |
+| Privacy Focused | ✅ | ⚠️ | ⚠️ | ❌ |
+
+---
+
+## Tech Stack
+
+- **Framework:** Next.js 15 (App Router)
+- **UI:** React 19, Tailwind CSS 4
+- **Language:** TypeScript
+- **Deployment:** Vercel, Netlify, Docker
+
+---
+
+## Contributing
+
+Contributions are welcome! Whether it's adding a new provider, fixing bugs, or improving docs — every PR helps.
+
+```bash
+# Fork the repo, then:
+git checkout -b feature/amazing-feature
+git commit -m "Add amazing feature"
+git push origin feature/amazing-feature
+```
+
+---
 
 ## License
 
-MIT
+MIT License — do whatever you want with it.
+
+---
+
+<p align="center">
+  <sub>Built with ☕ by <a href="https://github.com/nicremo">@nicremo</a></sub>
+</p>
