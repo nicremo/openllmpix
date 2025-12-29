@@ -40,7 +40,7 @@ export const PROVIDERS: Record<ProviderId, ProviderConfig> = {
     helpText: "Get your API key from Google AI Studio",
     baseUrl: "https://generativelanguage.googleapis.com/v1beta",
     supportsModelListing: false,
-    defaultModel: "gemini-2.0-flash-exp",
+    defaultModel: "nano-banana-pro",
     models: [
       {
         id: "nano-banana-pro",
