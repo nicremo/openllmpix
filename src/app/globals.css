@@ -1,0 +1,141 @@
+@import "tailwindcss";
+
+/* ============================================
+   CLEAN DARK MODE DESIGN SYSTEM
+   Inspired by shadcn/ui, Linear, Vercel
+   ============================================ */
+
+:root {
+  /* Backgrounds - 4 Stufen */
+  --bg-base: #0a0a0a;
+  --bg-surface: #141414;
+  --bg-elevated: #1a1a1a;
+  --bg-subtle: #0f0f0f;
+
+  /* Text - 3 Stufen */
+  --text-primary: #fafafa;
+  --text-secondary: #a1a1a1;
+  --text-tertiary: #525252;
+
+  /* Borders */
+  --border-subtle: #1f1f1f;
+  --border-default: #262626;
+  --border-strong: #404040;
+
+  /* Primary Accent - Clean Neutral (like Vercel) */
+  --accent-primary: #fafafa;
+  --accent-primary-hover: #e4e4e7;
+  --accent-foreground: #09090b;
+
+  /* Secondary Accent - Subtle Blue */
+  --accent-secondary: #3b82f6;
+  --accent-secondary-hover: #2563eb;
+  --accent-secondary-foreground: #ffffff;
+
+  /* States */
+  --success: #22c55e;
+  --success-foreground: #052e16;
+  --error: #ef4444;
+  --error-foreground: #450a0a;
+  --warning: #eab308;
+
+  /* Focus Ring */
+  --ring: #3b82f6;
+  --ring-offset: #0a0a0a;
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+}
+
+@theme inline {
+  --color-bg-base: var(--bg-base);
+  --color-bg-surface: var(--bg-surface);
+  --color-bg-elevated: var(--bg-elevated);
+  --color-bg-subtle: var(--bg-subtle);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-default: var(--border-default);
+  --color-border-strong: var(--border-strong);
+  --color-accent-primary: var(--accent-primary);
+  --color-accent-secondary: var(--accent-secondary);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+* {
+  border-color: var(--border-default);
+}
+
+body {
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-feature-settings: "rlig" 1, "calt" 1;
+}
+
+/* Custom scrollbar - Minimal */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-default);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-strong);
+}
+
+/* Focus visible styles */
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* Selection */
+::selection {
+  background: var(--accent-secondary);
+  color: var(--accent-secondary-foreground);
+}
+
+/* Smooth transitions */
+button, a, input, textarea, select {
+  transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Loading animation */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Spin animation */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
