@@ -33,9 +33,7 @@ But Google AI Studio's interface? Not my thing.
 
 So I built **OPENLLMPIX** — a clean, simple dashboard where I can use Nano Banana Pro (and other models) with my own API keys. No middleman fees, no clunky UI. Just prompt, generate, done.
 
-This is the **open-source version** — no accounts, no tracking, no server-side storage. Your API keys stay encrypted in your browser, and requests go directly to the providers.
-
-> **Want the hosted version?** Check out [openllmpix.com](https://openllmpix.com) for cloud sync, team features, and optional managed API access.
+**100% open-source** — no accounts, no tracking, no server-side storage. Your API keys stay encrypted in your browser, and requests go directly to the providers.
 
 ---
 
@@ -57,7 +55,7 @@ This is the **open-source version** — no accounts, no tracking, no server-side
 
 - **Zero Server Storage** — API keys are encrypted with AES-GCM and stored only in your browser
 - **Direct CORS Calls** — Your credentials go straight from browser to provider, never through our server
-- **Local History** — All generations saved in localStorage, always accessible, always private
+- **Local History** — All generations saved in IndexedDB, always accessible, always private
 
 ### User Experience
 
@@ -169,7 +167,7 @@ docker run -p 3000:3000 openllmpix
 - **UI:** React 19, Tailwind CSS 4
 - **Language:** TypeScript 5
 - **Security:** Web Crypto API (AES-GCM encryption)
-- **Storage:** Browser localStorage (encrypted)
+- **Storage:** IndexedDB + Web Crypto API
 - **Deployment:** Vercel, Netlify, Docker
 
 ---
