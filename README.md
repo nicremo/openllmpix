@@ -9,11 +9,18 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/nicremo/openllmpix/actions/workflows/ci.yml"><img src="https://github.com/nicremo/openllmpix/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/nicremo/openllmpix/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License"></a>
+  <a href="https://github.com/nicremo/openllmpix/pulls"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a>
+  <a href="https://github.com/nicremo/openllmpix/issues"><img src="https://img.shields.io/github/issues/nicremo/openllmpix" alt="Issues"></a>
+</p>
+
+<p align="center">
   <a href="https://openllmpix.com">Live Demo</a> •
   <a href="#features">Features</a> •
   <a href="#quick-start">Quick Start</a> •
   <a href="#providers">Providers</a> •
-  <a href="#deployment">Deployment</a>
+  <a href="#contributing">Contributing</a>
 </p>
 
 ---
@@ -38,6 +45,7 @@ This is the **open-source version** — no accounts, no tracking, no server-side
 
 - **Text-to-Image** — Describe what you want, get an image. Simple.
 - **Image-to-Image** — Upload reference images and describe how to modify them. Drag & drop, paste from clipboard, or click to upload.
+- **Chat Studio** — Edit images through conversation. Up to 4 context images, HEIC/TIFF support, iterative refinement with Nano Banana Pro.
 
 ### Image Controls
 
@@ -168,20 +176,34 @@ docker run -p 3000:3000 openllmpix
 
 ## Contributing
 
-Contributions are welcome! Whether it's adding a new provider, fixing bugs, or improving docs — every PR helps.
+We love contributions! Whether it's adding a new provider, fixing bugs, or improving docs — every PR helps make OPENLLMPIX better.
+
+**Quick Start:**
 
 ```bash
 # Fork the repo, then:
-git checkout -b feature/amazing-feature
-git commit -m "Add amazing feature"
-git push origin feature/amazing-feature
+git clone https://github.com/YOUR_USERNAME/openllmpix.git
+cd openllmpix
+npm install
+npm run dev
 ```
+
+**Before submitting a PR:**
+- Read our [Contributing Guidelines](CONTRIBUTING.md)
+- Make sure `npm run build` passes
+- Follow the PR template
 
 **Ideas for contributions:**
 - Add new providers (Replicate, Together.ai, Stability AI)
 - Video generation support (Runway, Kling, Pika)
 - Image editing tools (inpainting, outpainting)
-- Gallery/favorites system
+- Improve Chat Studio features
+- Add tests
+
+**Get Help:**
+- Open an [issue](https://github.com/nicremo/openllmpix/issues) for bugs or feature requests
+- Tag `@claude` in issues for AI-assisted troubleshooting
+- Join [Discussions](https://github.com/nicremo/openllmpix/discussions) for questions
 
 ---
 

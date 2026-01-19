@@ -1,0 +1,17 @@
+# Code Owners for OpenLLMPix
+# These users will be requested for review when PRs touch these paths
+
+# Default owner for everything
+* @nicremo
+
+# Core application
+/src/app/ @nicremo
+/src/components/ @nicremo
+/src/lib/ @nicremo
+
+# Configuration
+/*.config.* @nicremo
+/package.json @nicremo
+
+# GitHub workflows
+/.github/ @nicremo
