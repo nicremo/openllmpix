@@ -18,6 +18,7 @@ type AspectRatio = "1:1" | "16:9" | "9:16" | "4:3" | "3:4";
 type JobStatus = "generating" | "completed" | "error";
 
 interface ImageSlot {
+  id: string; // Unique ID for each image
   status: 'loading' | 'completed' | 'error';
   imageUrl?: string;
   error?: string;
@@ -58,6 +59,7 @@ interface ChatMessage {
 }
 
 interface ChatActiveImage {
+  id: string; // Unique ID for session storage
   imageUrl: string;
   prompt: string;
   model: string;
@@ -314,7 +316,8 @@ export default function Home() {
       model: selectedModel,
       referenceImages: uploadedImages.map((img) => img.url),
       results: [],
-      imageSlots: Array.from({ length: numberOfImages }, () => ({
+      imageSlots: Array.from({ length: numberOfImages }, (_, i) => ({
+        id: `${jobId}-img-${i}-${Date.now()}`,
         status: 'loading' as const,
       })),
       timestamp: Date.now(),
@@ -346,7 +349,7 @@ export default function Home() {
     const imagePromises = Array.from({ length: numberOfImages }, (_, index) => {
       return generateImage()
         .then((data) => {
-          // Update this specific slot with completed image
+          // Update this specific slot with completed image (preserve ID)
           setJobs((prev) =>
             prev.map((job) =>
               job.id === jobId
@@ -354,7 +357,7 @@ export default function Home() {
                     ...job,
                     imageSlots: job.imageSlots.map((slot, i) =>
                       i === index
-                        ? { status: 'completed' as const, imageUrl: data.images[0] }
+                        ? { ...slot, status: 'completed' as const, imageUrl: data.images[0] }
                         : slot
                     ),
                     results: [...job.results, data.images[0]],
@@ -366,7 +369,7 @@ export default function Home() {
         })
         .catch((err) => {
           const errorMessage = err instanceof Error ? err.message : "An error occurred";
-          // Update this specific slot with error
+          // Update this specific slot with error (preserve ID)
           setJobs((prev) =>
             prev.map((job) =>
               job.id === jobId
@@ -374,7 +377,7 @@ export default function Home() {
                     ...job,
                     imageSlots: job.imageSlots.map((slot, i) =>
                       i === index
-                        ? { status: 'error' as const, error: errorMessage }
+                        ? { ...slot, status: 'error' as const, error: errorMessage }
                         : slot
                     ),
                   }
@@ -546,7 +549,9 @@ export default function Home() {
 
         // Add to Gallery: Find original job or create new one
         const modelInfo = IMAGE_TO_IMAGE_MODELS.find(m => m.id === chatSelectedModel);
+        const newSlotId = `chat-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
         const newSlot: ImageSlot = {
+          id: newSlotId,
           status: 'completed',
           imageUrl: newImageUrl,
           fromChatStudio: true,
@@ -614,9 +619,8 @@ export default function Home() {
     setChatActiveImage(img);
     setIsLeftPanelCollapsed(true);
 
-    // Try to load existing session
-    const imageId = img.imageUrl.substring(0, 100);
-    const existingSession = await loadChatSession(imageId);
+    // Try to load existing session using the unique image ID
+    const existingSession = await loadChatSession(img.id);
 
     if (existingSession && existingSession.messages.length > 0) {
       // Restore saved session
@@ -682,7 +686,7 @@ export default function Home() {
   useEffect(() => {
     if (chatActiveImage && chatMessages.length > 0) {
       const session: ChatSession = {
-        imageId: chatActiveImage.imageUrl.substring(0, 100), // Use first 100 chars as ID
+        imageId: chatActiveImage.id, // Use unique image ID
         messages: chatMessages,
         contextImages: chatContextImages,
         displayImage: chatDisplayImage,
@@ -1274,6 +1278,7 @@ export default function Home() {
                                           onClick={(e) => {
                                             e.stopPropagation();
                                             handleSelectChatImage({
+                                              id: slot.id,
                                               imageUrl: slot.imageUrl!,
                                               prompt: job.prompt,
                                               model: job.model,
@@ -1390,6 +1395,7 @@ export default function Home() {
                               key={`${job.id}-${idx}`}
                               className="group relative aspect-square rounded-lg overflow-hidden cursor-pointer"
                               onClick={() => handleSelectChatImage({
+                                id: slot.id,
                                 imageUrl: slot.imageUrl!,
                                 prompt: job.prompt,
                                 model: job.model,
