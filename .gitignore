@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# IDE / Editor configs
+.gemini/
+.idea/
+.vscode/
+
+# Launch / Marketing docs (personal)
+LAUNCH_POSTS.md

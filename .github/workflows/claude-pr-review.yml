@@ -1,4 +1,4 @@
-name: Claude PR Review
+name: PR Review Helper
 
 on:
   pull_request:
@@ -9,8 +9,8 @@ permissions:
   pull-requests: write
 
 jobs:
-  claude-review:
-    name: Claude Code Review
+  review-helper:
+    name: PR Review Helper
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
 
@@ -31,46 +31,32 @@ jobs:
             **/*.jsx
             **/*.css
 
-      - name: Claude Code Review
-        if: steps.changed-files.outputs.any_changed == 'true'
-        uses: anthropics/anthropic-quickstarts@main
-        with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          model: claude-sonnet-4-20250514
-          prompt: |
-            You are reviewing a pull request for OpenLLMPix, an open-source AI image generation app.
-
-            Review the following code changes and provide:
-            1. A brief summary of the changes
-            2. Potential issues or bugs
-            3. Security concerns (especially around API keys, user input)
-            4. Performance suggestions
-            5. Code quality improvements
-
-            Be constructive and helpful. Focus on important issues, not style nitpicks.
-
-            Changed files: ${{ steps.changed-files.outputs.all_changed_files }}
-        continue-on-error: true
-
-      - name: Post Review Comment
-        if: steps.changed-files.outputs.any_changed == 'true'
+      - name: Post Review Checklist
+        if: github.event.action == 'opened'
         uses: actions/github-script@v7
         with:
           script: |
-            const fs = require('fs');
+            const changedFiles = '${{ steps.changed-files.outputs.all_changed_files }}'.split(' ').filter(f => f);
 
-            // Create a helpful comment even if Claude review failed
-            const body = `## AI Code Review
+            let fileList = '';
+            if (changedFiles.length > 0 && changedFiles.length <= 10) {
+              fileList = '\n\n**Changed files:**\n' + changedFiles.map(f => `- \`${f}\``).join('\n');
+            } else if (changedFiles.length > 10) {
+              fileList = `\n\n**${changedFiles.length} files changed**`;
+            }
 
-            This PR has been flagged for review. A maintainer will review your changes soon.
+            const body = `## PR Review Checklist
 
-            **Checklist for reviewers:**
+            Thanks for your contribution to OpenLLMPix!
+
+            **Please verify before merge:**
             - [ ] Code follows project conventions
-            - [ ] No sensitive data exposed
-            - [ ] Build passes locally
-            - [ ] Changes are documented if needed
+            - [ ] No sensitive data exposed (API keys, secrets)
+            - [ ] \`npm run build\` passes locally
+            - [ ] Changes are tested manually
+            - [ ] Documentation updated if needed${fileList}
 
-            Thanks for contributing to OpenLLMPix!`;
+            A maintainer will review your changes soon.`;
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,
