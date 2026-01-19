@@ -10,6 +10,8 @@ import ImageLightbox from "@/components/ImageLightbox";
 import { getAllProviders } from "@/lib/providers/registry";
 import { getClientAdapter } from "@/lib/providers/client-adapters";
 import type { ProviderId, GenerateRequest } from "@/lib/providers/types";
+import { useImageUpload } from "@/hooks/useImageUpload";
+import { saveJobs, loadJobs, clearJobs, saveChatSession, loadChatSession, type ChatSession } from "@/lib/storage";
 
 type Mode = "text-to-image" | "image-to-image";
 type AspectRatio = "1:1" | "16:9" | "9:16" | "4:3" | "3:4";
@@ -19,6 +21,10 @@ interface ImageSlot {
   status: 'loading' | 'completed' | 'error';
   imageUrl?: string;
   error?: string;
+  fromChatStudio?: boolean;
+  chatPrompt?: string;
+  model?: string;
+  modelName?: string;
 }
 
 interface GenerationJob {
@@ -41,6 +47,24 @@ interface UploadedImage {
   name: string;
 }
 
+// Chat Studio Types
+interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  imageUrl?: string;
+  timestamp: number;
+  referenceImageCount?: number;
+}
+
+interface ChatActiveImage {
+  imageUrl: string;
+  prompt: string;
+  model: string;
+  modelName?: string;
+  aspectRatio: string;
+}
+
 const ASPECT_RATIOS: { value: AspectRatio; label: string }[] = [
   { value: "1:1", label: "1:1" },
   { value: "16:9", label: "16:9" },
@@ -61,6 +85,11 @@ const EXAMPLE_PROMPTS = {
     "Transform into Van Gogh painting style",
   ],
 };
+
+// Image-to-Image Models for Chat Studio
+const IMAGE_TO_IMAGE_MODELS = [
+  { id: 'google/gemini-3-pro-image-preview', name: 'Nano Banana Pro', price: '$0.05/img' },
+];
 
 // Build provider display names from registry
 const PROVIDER_DISPLAY_NAMES: Record<string, string> = Object.fromEntries(
@@ -94,6 +123,36 @@ export default function Home() {
     currentIndex: number;
   } | null>(null);
 
+  // Right Panel Tab
+  const [rightPanelTab, setRightPanelTab] = useState<'gallery' | 'chat'>('gallery');
+
+  // Chat Studio State
+  const [chatActiveImage, setChatActiveImage] = useState<ChatActiveImage | null>(null);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [chatInput, setChatInput] = useState('');
+  const [chatContextImages, setChatContextImages] = useState<string[]>([]);
+  const [chatDisplayImage, setChatDisplayImage] = useState('');
+  const [chatZoomImage, setChatZoomImage] = useState<string | null>(null);
+  const [isChatGenerating, setIsChatGenerating] = useState(false);
+  const [chatSelectedModel, setChatSelectedModel] = useState(IMAGE_TO_IMAGE_MODELS[0].id);
+
+  // Left Panel Collapse
+  const [isLeftPanelCollapsed, setIsLeftPanelCollapsed] = useState(false);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+
+  // Chat Image Upload Hook
+  const chatImageUpload = useImageUpload(chatContextImages, {
+    maxImages: 4,
+    maxImageSize: 2048,
+    onImagesAdded: (newImages) => {
+      setChatContextImages(prev => [...prev, ...newImages]);
+      if (!chatDisplayImage && newImages.length > 0) {
+        setChatDisplayImage(newImages[0]);
+      }
+    },
+    onError: (error) => console.error('Chat image upload error:', error)
+  });
+
   // Check for API key on mount and show modal if not configured
   useEffect(() => {
     const loadConfig = async () => {
@@ -107,31 +166,23 @@ export default function Home() {
     loadConfig();
   }, []);
 
-  // Load local generation history from localStorage on mount
+  // Load generation history from IndexedDB on mount
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem("openllmpix-generations");
-      if (stored) {
-        const parsed = JSON.parse(stored) as GenerationJob[];
-        setJobs(parsed);
+    loadJobs<GenerationJob>().then(storedJobs => {
+      if (storedJobs.length > 0) {
+        setJobs(storedJobs);
       }
-    } catch {
-      // Silent fail - localStorage may be unavailable
-    }
+    });
   }, []);
 
-  // Save local generation history to localStorage when it changes
+  // Save generation history to IndexedDB when it changes
   useEffect(() => {
     const completedJobs = jobs.filter(job =>
       job.status === "completed" || job.status === "error" ||
       job.imageSlots?.some(s => s.status === "completed")
     );
     if (completedJobs.length > 0) {
-      try {
-        localStorage.setItem("openllmpix-generations", JSON.stringify(completedJobs));
-      } catch {
-        // Silent fail - localStorage may be unavailable
-      }
+      saveJobs(completedJobs);
     }
   }, [jobs]);
 
@@ -412,6 +463,235 @@ export default function Home() {
       } : null);
     }
   }, [lightboxData]);
+
+  // ===== Chat Studio Functions =====
+
+  // Edit image via API (client-side)
+  const handleEditImage = useCallback(async (
+    editPrompt: string,
+    referenceImages: string[],
+    modelId: string
+  ): Promise<string | null> => {
+    if (!apiConfig?.apiKey) return null;
+    if (referenceImages.length === 0) return null;
+
+    try {
+      const providerId = (apiConfig?.provider || "openrouter") as ProviderId;
+      const clientAdapter = getClientAdapter(providerId);
+
+      const request: GenerateRequest = {
+        prompt: editPrompt,
+        aspectRatio: "1:1",
+        model: modelId,
+        apiKey: apiConfig.apiKey,
+        provider: providerId,
+        mode: "image-to-image",
+        referenceImages: referenceImages,
+        numberOfImages: 1,
+      };
+
+      const result = await clientAdapter.generate(request);
+      return result.images[0] || null;
+    } catch (error) {
+      console.error("Edit image error:", error);
+      return null;
+    }
+  }, [apiConfig]);
+
+  // Handle chat generation
+  const handleChatGenerate = useCallback(async () => {
+    if (!chatInput.trim() || isChatGenerating || !chatActiveImage) return;
+    if (chatContextImages.length === 0) {
+      setChatMessages(prev => [...prev, {
+        id: `msg-${Date.now()}`,
+        role: 'assistant',
+        content: 'Bitte füge mindestens ein Bild zum Kontext hinzu.',
+        timestamp: Date.now(),
+      }]);
+      return;
+    }
+
+    const userMessage = chatInput.trim();
+    const userMsg: ChatMessage = {
+      id: `msg-${Date.now()}`,
+      role: 'user',
+      content: userMessage,
+      timestamp: Date.now(),
+      referenceImageCount: chatContextImages.length,
+    };
+
+    setChatMessages(prev => [...prev, userMsg]);
+    setChatInput('');
+    setIsChatGenerating(true);
+
+    try {
+      const newImageUrl = await handleEditImage(userMessage, chatContextImages, chatSelectedModel);
+      if (newImageUrl) {
+        const assistantMsg: ChatMessage = {
+          id: `msg-${Date.now()}-response`,
+          role: 'assistant',
+          content: chatContextImages.length > 1
+            ? `Bild aus ${chatContextImages.length} Referenzen erstellt:`
+            : 'Hier ist dein bearbeitetes Bild:',
+          imageUrl: newImageUrl,
+          timestamp: Date.now(),
+        };
+        setChatMessages(prev => [...prev, assistantMsg]);
+        setChatDisplayImage(newImageUrl);
+        // FIFO: Add new image, remove oldest if > 4
+        setChatContextImages(prev => {
+          if (prev.length >= 4) return [...prev.slice(1), newImageUrl];
+          return [...prev, newImageUrl];
+        });
+
+        // Add to Gallery: Find original job or create new one
+        const modelInfo = IMAGE_TO_IMAGE_MODELS.find(m => m.id === chatSelectedModel);
+        const newSlot: ImageSlot = {
+          status: 'completed',
+          imageUrl: newImageUrl,
+          fromChatStudio: true,
+          chatPrompt: userMessage,
+          model: chatSelectedModel,
+          modelName: modelInfo?.name || 'Chat Studio',
+        };
+
+        setJobs(prev => {
+          // Find job that contains the original image
+          const originalImageUrl = chatActiveImage?.imageUrl;
+          const jobIndex = prev.findIndex(job =>
+            job.imageSlots.some(slot => slot.imageUrl === originalImageUrl)
+          );
+
+          if (jobIndex !== -1) {
+            // Add to existing job
+            const updatedJobs = [...prev];
+            updatedJobs[jobIndex] = {
+              ...updatedJobs[jobIndex],
+              imageSlots: [...updatedJobs[jobIndex].imageSlots, newSlot],
+              results: [...updatedJobs[jobIndex].results, newImageUrl],
+            };
+            return updatedJobs;
+          } else {
+            // Create new job for Chat Studio edits
+            const newJob: GenerationJob = {
+              id: `chat-${Date.now()}`,
+              status: 'completed',
+              prompt: chatActiveImage?.prompt || 'Chat Studio Edit',
+              mode: 'image-to-image',
+              aspectRatio: '1:1',
+              model: chatSelectedModel,
+              referenceImages: chatContextImages,
+              results: [newImageUrl],
+              imageSlots: [newSlot],
+              timestamp: Date.now(),
+            };
+            return [newJob, ...prev];
+          }
+        });
+      } else {
+        setChatMessages(prev => [...prev, {
+          id: `msg-${Date.now()}`,
+          role: 'assistant',
+          content: 'Fehler bei der Bildgenerierung. Bitte versuche es erneut.',
+          timestamp: Date.now(),
+        }]);
+      }
+    } catch (error) {
+      console.error('Chat generation error:', error);
+      setChatMessages(prev => [...prev, {
+        id: `msg-${Date.now()}`,
+        role: 'assistant',
+        content: 'Ein Fehler ist aufgetreten.',
+        timestamp: Date.now(),
+      }]);
+    } finally {
+      setIsChatGenerating(false);
+    }
+  }, [chatInput, isChatGenerating, chatActiveImage, chatContextImages, handleEditImage, chatSelectedModel, setJobs]);
+
+  // Select image for chat editing
+  const handleSelectChatImage = useCallback(async (img: ChatActiveImage) => {
+    setChatActiveImage(img);
+    setIsLeftPanelCollapsed(true);
+
+    // Try to load existing session
+    const imageId = img.imageUrl.substring(0, 100);
+    const existingSession = await loadChatSession(imageId);
+
+    if (existingSession && existingSession.messages.length > 0) {
+      // Restore saved session
+      setChatMessages(existingSession.messages as ChatMessage[]);
+      setChatContextImages(existingSession.contextImages);
+      setChatDisplayImage(existingSession.displayImage || img.imageUrl);
+    } else {
+      // Start new session
+      setChatContextImages([img.imageUrl]);
+      setChatDisplayImage(img.imageUrl);
+      setChatMessages([{
+        id: `msg-initial-${Date.now()}`,
+        role: 'assistant',
+        content: `Bild geladen. Original-Prompt: "${img.prompt}"`,
+        imageUrl: img.imageUrl,
+        timestamp: Date.now(),
+      }]);
+    }
+  }, []);
+
+  // Go back from chat editing
+  const handleChatBack = useCallback(() => {
+    setChatActiveImage(null);
+    setIsLeftPanelCollapsed(false);
+    setChatContextImages([]);
+    setChatDisplayImage('');
+    setChatMessages([]);
+  }, []);
+
+  // Add image to context
+  const handleAddToContext = useCallback((imageUrl: string) => {
+    if (chatContextImages.length >= 4) return;
+    if (chatContextImages.includes(imageUrl)) return;
+    setChatContextImages(prev => [...prev, imageUrl]);
+  }, [chatContextImages]);
+
+  // Remove image from context
+  const handleRemoveFromContext = useCallback((imageUrl: string) => {
+    setChatContextImages(prev => prev.filter(img => img !== imageUrl));
+    if (chatDisplayImage === imageUrl) {
+      setChatDisplayImage(chatContextImages[0] || '');
+    }
+  }, [chatContextImages, chatDisplayImage]);
+
+  // Download chat image
+  const handleChatDownload = useCallback((imageUrl: string) => {
+    const link = document.createElement("a");
+    link.href = imageUrl;
+    link.download = `chat-edit-${Date.now()}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }, []);
+
+  // Auto-scroll chat
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [chatMessages]);
+
+  // Auto-save chat session to IndexedDB
+  useEffect(() => {
+    if (chatActiveImage && chatMessages.length > 0) {
+      const session: ChatSession = {
+        imageId: chatActiveImage.imageUrl.substring(0, 100), // Use first 100 chars as ID
+        messages: chatMessages,
+        contextImages: chatContextImages,
+        displayImage: chatDisplayImage,
+        activeImage: chatActiveImage,
+        timestamp: Date.now(),
+      };
+      saveChatSession(session);
+    }
+  }, [chatMessages, chatContextImages, chatDisplayImage, chatActiveImage]);
 
   return (
     <div
@@ -725,269 +1005,656 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Right Panel - Generation History */}
-        <div className="flex-1 overflow-y-auto" style={{ background: "var(--bg-base)" }}>
-          {jobs.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center p-8">
-              <div
-                className="w-12 h-12 rounded-xl flex items-center justify-center mb-4"
-                style={{ background: "var(--bg-surface)" }}
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  style={{ color: "var(--text-tertiary)" }}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  />
-                </svg>
-              </div>
-              <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-                Generated images will appear here
-              </p>
-              <p className="text-xs mt-1" style={{ color: "var(--text-tertiary)" }}>
-                Your generations are saved locally
-              </p>
-            </div>
-          ) : (
-            <div className="p-4">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>
-                  Generations ({jobs.length})
-                </span>
-                <button
-                  onClick={() => {
-                    setJobs([]);
-                    localStorage.removeItem("openllmpix-generations");
-                  }}
-                  className="text-xs px-2 py-1 rounded"
-                  style={{ color: "var(--text-tertiary)", background: "var(--bg-surface)" }}
-                >
-                  Clear All
-                </button>
-              </div>
+        {/* Right Panel */}
+        <div className="flex-1 flex flex-col overflow-hidden" style={{ background: "var(--bg-base)" }}>
+          {/* Tab Navigation */}
+          <div className="flex border-b px-4" style={{ borderColor: "var(--border-subtle)" }}>
+            <button
+              onClick={() => setRightPanelTab('gallery')}
+              className="px-4 py-3 text-sm font-medium border-b-2 transition-colors"
+              style={{
+                borderColor: rightPanelTab === 'gallery' ? "var(--accent-primary)" : "transparent",
+                color: rightPanelTab === 'gallery' ? "var(--text-primary)" : "var(--text-tertiary)",
+              }}
+            >
+              Gallery
+            </button>
+            <button
+              onClick={() => setRightPanelTab('chat')}
+              className="px-4 py-3 text-sm font-medium border-b-2 transition-colors"
+              style={{
+                borderColor: rightPanelTab === 'chat' ? "var(--accent-primary)" : "transparent",
+                color: rightPanelTab === 'chat' ? "var(--text-primary)" : "var(--text-tertiary)",
+              }}
+            >
+              Chat Studio
+            </button>
+          </div>
 
-              <div className="flex flex-col gap-4">
-                {jobs.map((job) => (
+          {/* Gallery Tab */}
+          {rightPanelTab === 'gallery' && (
+            <div className="flex-1 overflow-y-auto">
+              {jobs.length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center p-8">
                   <div
-                    key={job.id}
-                    className="rounded-xl border overflow-hidden"
-                    style={{
-                      borderColor: job.status === "generating" ? "var(--accent-secondary)" : "var(--border-subtle)",
-                      background: "var(--bg-surface)",
-                    }}
+                    className="w-12 h-12 rounded-xl flex items-center justify-center mb-4"
+                    style={{ background: "var(--bg-surface)" }}
                   >
-                    {/* Job Header */}
-                    <div className="p-4 border-b" style={{ borderColor: "var(--border-subtle)" }}>
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-2">
-                            {job.status === "generating" && (
-                              <span
-                                className="flex items-center gap-1.5 text-xs px-2 py-0.5 rounded-full"
-                                style={{ background: "rgba(59, 130, 246, 0.15)", color: "var(--accent-secondary)" }}
-                              >
-                                <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none">
-                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
-                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                                </svg>
-                                Generating
-                              </span>
-                            )}
-                            {job.status === "completed" && (
-                              <span
-                                className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full"
-                                style={{ background: "rgba(34, 197, 94, 0.15)", color: "var(--success)" }}
-                              >
-                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                </svg>
-                                Done
-                              </span>
-                            )}
-                            {job.status === "error" && (
-                              <span
-                                className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full"
-                                style={{ background: "rgba(239, 68, 68, 0.15)", color: "var(--error)" }}
-                              >
-                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                                Error
-                              </span>
-                            )}
-                            <span
-                              className="text-xs px-2 py-0.5 rounded-full"
-                              style={{ background: "var(--bg-elevated)", color: "var(--text-tertiary)" }}
-                            >
-                              {job.mode === "text-to-image" ? "Text->Image" : "Image->Image"}
-                            </span>
-                            <span
-                              className="text-xs font-mono"
-                              style={{ color: "var(--text-tertiary)" }}
-                            >
-                              {job.aspectRatio}
-                            </span>
-                          </div>
-                          <p
-                            className="text-sm leading-relaxed"
-                            style={{ color: "var(--text-primary)" }}
-                          >
-                            {job.prompt}
-                          </p>
-                          {job.error && (
-                            <p className="text-xs mt-2" style={{ color: "var(--error)" }}>
-                              {job.error}
-                            </p>
-                          )}
-                        </div>
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      style={{ color: "var(--text-tertiary)" }}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.5}
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                  </div>
+                  <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+                    Generated images will appear here
+                  </p>
+                  <p className="text-xs mt-1" style={{ color: "var(--text-tertiary)" }}>
+                    Your generations are saved locally
+                  </p>
+                </div>
+              ) : (
+                <div className="p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>
+                      Generations ({jobs.length})
+                    </span>
+                    <button
+                      onClick={() => {
+                        setJobs([]);
+                        clearJobs();
+                      }}
+                      className="text-xs px-2 py-1 rounded"
+                      style={{ color: "var(--text-tertiary)", background: "var(--bg-surface)" }}
+                    >
+                      Clear All
+                    </button>
+                  </div>
 
-                        {job.referenceImages.length > 0 && (
-                          <div className="flex gap-1.5 flex-shrink-0">
-                            {job.referenceImages.slice(0, 3).map((img, i) => (
-                              <div
-                                key={i}
-                                className="w-12 h-12 rounded-lg overflow-hidden"
-                                style={{ background: "var(--bg-base)" }}
-                              >
-                                <img src={img} alt={`Ref ${i + 1}`} className="w-full h-full object-cover" />
-                              </div>
-                            ))}
-                            {job.referenceImages.length > 3 && (
-                              <div
-                                className="w-12 h-12 rounded-lg flex items-center justify-center text-xs"
-                                style={{ background: "var(--bg-base)", color: "var(--text-tertiary)" }}
-                              >
-                                +{job.referenceImages.length - 3}
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Job Results */}
-                    {job.imageSlots && job.imageSlots.length > 0 && (
-                      <div className="p-3">
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                          {job.imageSlots.map((slot, index) => (
-                            <div
-                              key={index}
-                              className="group relative rounded-lg overflow-hidden aspect-square"
-                              style={{ background: "var(--bg-base)" }}
-                            >
-                              {slot.status === 'loading' && (
-                                <div className="w-full h-full flex items-center justify-center">
-                                  <div className="flex flex-col items-center gap-2">
-                                    <svg className="animate-spin h-8 w-8" viewBox="0 0 24 24" fill="none" style={{ color: "var(--accent-secondary)" }}>
+                  <div className="flex flex-col gap-4">
+                    {jobs.map((job) => (
+                      <div
+                        key={job.id}
+                        className="rounded-xl border overflow-hidden"
+                        style={{
+                          borderColor: job.status === "generating" ? "var(--accent-secondary)" : "var(--border-subtle)",
+                          background: "var(--bg-surface)",
+                        }}
+                      >
+                        {/* Job Header */}
+                        <div className="p-4 border-b" style={{ borderColor: "var(--border-subtle)" }}>
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-2">
+                                {job.status === "generating" && (
+                                  <span
+                                    className="flex items-center gap-1.5 text-xs px-2 py-0.5 rounded-full"
+                                    style={{ background: "rgba(59, 130, 246, 0.15)", color: "var(--accent-secondary)" }}
+                                  >
+                                    <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none">
                                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
                                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                                     </svg>
-                                    <p className="text-xs" style={{ color: "var(--text-tertiary)" }}>
-                                      Generating...
-                                    </p>
-                                  </div>
-                                </div>
-                              )}
-
-                              {slot.status === 'completed' && slot.imageUrl && (
-                                <>
-                                  <img
-                                    src={slot.imageUrl}
-                                    alt={`Result ${index + 1}`}
-                                    className="w-full h-full object-cover"
-                                  />
-                                  <div
-                                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2"
-                                    style={{ background: "rgba(0, 0, 0, 0.7)" }}
+                                    Generating
+                                  </span>
+                                )}
+                                {job.status === "completed" && (
+                                  <span
+                                    className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full"
+                                    style={{ background: "rgba(34, 197, 94, 0.15)", color: "var(--success)" }}
                                   >
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        openLightbox(slot.imageUrl!, job, index);
-                                      }}
-                                      className="p-2 rounded-lg"
-                                      style={{ background: "var(--accent-primary)", color: "var(--accent-foreground)" }}
-                                      title="View"
-                                    >
-                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                      </svg>
-                                    </button>
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleDownload(slot.imageUrl!, index);
-                                      }}
-                                      className="p-2 rounded-lg"
-                                      style={{ background: "var(--accent-primary)", color: "var(--accent-foreground)" }}
-                                      title="Download"
-                                    >
-                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                      </svg>
-                                    </button>
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        const newRef: UploadedImage = {
-                                          id: `${Date.now()}-ref`,
-                                          url: slot.imageUrl!,
-                                          name: "Generated image",
-                                        };
-                                        setUploadedImages((prev) => [...prev, newRef]);
-                                        setMode("image-to-image");
-                                      }}
-                                      className="p-2 rounded-lg border"
-                                      style={{ borderColor: "var(--border-strong)", color: "var(--text-primary)" }}
-                                      title="Use as reference"
-                                    >
-                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                      </svg>
-                                    </button>
-                                  </div>
-                                </>
-                              )}
-
-                              {slot.status === 'error' && (
-                                <div className="w-full h-full flex items-center justify-center p-4">
-                                  <div className="flex flex-col items-center gap-2 text-center">
-                                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: "var(--error)" }}>
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                     </svg>
-                                    <p className="text-xs" style={{ color: "var(--error)" }}>
-                                      {slot.error || "Failed"}
-                                    </p>
-                                  </div>
-                                </div>
+                                    Done
+                                  </span>
+                                )}
+                                {job.status === "error" && (
+                                  <span
+                                    className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full"
+                                    style={{ background: "rgba(239, 68, 68, 0.15)", color: "var(--error)" }}
+                                  >
+                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                    Error
+                                  </span>
+                                )}
+                                <span
+                                  className="text-xs px-2 py-0.5 rounded-full"
+                                  style={{ background: "var(--bg-elevated)", color: "var(--text-tertiary)" }}
+                                >
+                                  {job.mode === "text-to-image" ? "Text->Image" : "Image->Image"}
+                                </span>
+                                <span
+                                  className="text-xs font-mono"
+                                  style={{ color: "var(--text-tertiary)" }}
+                                >
+                                  {job.aspectRatio}
+                                </span>
+                              </div>
+                              <p
+                                className="text-sm leading-relaxed"
+                                style={{ color: "var(--text-primary)" }}
+                              >
+                                {job.prompt}
+                              </p>
+                              {job.error && (
+                                <p className="text-xs mt-2" style={{ color: "var(--error)" }}>
+                                  {job.error}
+                                </p>
                               )}
                             </div>
-                          ))}
+
+                            {job.referenceImages.length > 0 && (
+                              <div className="flex gap-1.5 flex-shrink-0">
+                                {job.referenceImages.slice(0, 3).map((img, i) => (
+                                  <div
+                                    key={i}
+                                    className="w-12 h-12 rounded-lg overflow-hidden"
+                                    style={{ background: "var(--bg-base)" }}
+                                  >
+                                    <img src={img} alt={`Ref ${i + 1}`} className="w-full h-full object-cover" />
+                                  </div>
+                                ))}
+                                {job.referenceImages.length > 3 && (
+                                  <div
+                                    className="w-12 h-12 rounded-lg flex items-center justify-center text-xs"
+                                    style={{ background: "var(--bg-base)", color: "var(--text-tertiary)" }}
+                                  >
+                                    +{job.referenceImages.length - 3}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Job Results */}
+                        {job.imageSlots && job.imageSlots.length > 0 && (
+                          <div className="p-3">
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                              {job.imageSlots.map((slot, index) => (
+                                <div
+                                  key={index}
+                                  className="group relative rounded-lg overflow-hidden aspect-square"
+                                  style={{ background: "var(--bg-base)" }}
+                                >
+                                  {slot.status === 'loading' && (
+                                    <div className="w-full h-full flex items-center justify-center">
+                                      <div className="flex flex-col items-center gap-2">
+                                        <svg className="animate-spin h-8 w-8" viewBox="0 0 24 24" fill="none" style={{ color: "var(--accent-secondary)" }}>
+                                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+                                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                        </svg>
+                                        <p className="text-xs" style={{ color: "var(--text-tertiary)" }}>
+                                          Generating...
+                                        </p>
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {slot.status === 'completed' && slot.imageUrl && (
+                                    <>
+                                      <img
+                                        src={slot.imageUrl}
+                                        alt={`Result ${index + 1}`}
+                                        className="w-full h-full object-cover"
+                                      />
+                                      {/* Chat Studio Badge */}
+                                      {slot.fromChatStudio && (
+                                        <div
+                                          className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[10px] font-medium"
+                                          style={{ background: "#f59e0b", color: "#000" }}
+                                          title={slot.chatPrompt}
+                                        >
+                                          Chat Studio
+                                        </div>
+                                      )}
+                                      <div
+                                        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2"
+                                        style={{ background: "rgba(0, 0, 0, 0.7)" }}
+                                      >
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            openLightbox(slot.imageUrl!, job, index);
+                                          }}
+                                          className="p-2 rounded-lg"
+                                          style={{ background: "var(--accent-primary)", color: "var(--accent-foreground)" }}
+                                          title="View"
+                                        >
+                                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                          </svg>
+                                        </button>
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDownload(slot.imageUrl!, index);
+                                          }}
+                                          className="p-2 rounded-lg"
+                                          style={{ background: "var(--accent-primary)", color: "var(--accent-foreground)" }}
+                                          title="Download"
+                                        >
+                                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                          </svg>
+                                        </button>
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            const newRef: UploadedImage = {
+                                              id: `${Date.now()}-ref`,
+                                              url: slot.imageUrl!,
+                                              name: "Generated image",
+                                            };
+                                            setUploadedImages((prev) => [...prev, newRef]);
+                                            setMode("image-to-image");
+                                          }}
+                                          className="p-2 rounded-lg border"
+                                          style={{ borderColor: "var(--border-strong)", color: "var(--text-primary)" }}
+                                          title="Use as reference"
+                                        >
+                                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                          </svg>
+                                        </button>
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleSelectChatImage({
+                                              imageUrl: slot.imageUrl!,
+                                              prompt: job.prompt,
+                                              model: job.model,
+                                              aspectRatio: job.aspectRatio,
+                                            });
+                                            setRightPanelTab('chat');
+                                          }}
+                                          className="p-2 rounded-lg"
+                                          style={{ background: "#f59e0b", color: "#000" }}
+                                          title="Edit in Chat Studio"
+                                        >
+                                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                          </svg>
+                                        </button>
+                                      </div>
+                                    </>
+                                  )}
+
+                                  {slot.status === 'error' && (
+                                    <div className="w-full h-full flex items-center justify-center p-4">
+                                      <div className="flex flex-col items-center gap-2 text-center">
+                                        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: "var(--error)" }}>
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <p className="text-xs" style={{ color: "var(--error)" }}>
+                                          {slot.error || "Failed"}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Timestamp Footer */}
+                        <div
+                          className="px-4 py-2 text-xs"
+                          style={{ color: "var(--text-tertiary)", background: "var(--bg-subtle)" }}
+                        >
+                          {new Date(job.timestamp).toLocaleTimeString()}
                         </div>
                       </div>
-                    )}
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
-                    {/* Timestamp Footer */}
-                    <div
-                      className="px-4 py-2 text-xs"
-                      style={{ color: "var(--text-tertiary)", background: "var(--bg-subtle)" }}
+          {/* Chat Studio Tab */}
+          {rightPanelTab === 'chat' && (
+            <div className="flex-1 flex flex-col overflow-hidden">
+              {!chatActiveImage ? (
+                /* Image Selection Grid */
+                <div className="flex-1 overflow-y-auto p-4">
+                  <div className="mb-4">
+                    <h3 className="text-sm font-medium mb-2" style={{ color: "var(--text-primary)" }}>
+                      Select an image to edit
+                    </h3>
+                    <p className="text-xs" style={{ color: "var(--text-tertiary)" }}>
+                      Choose from your generated images or upload a new one
+                    </p>
+                  </div>
+
+                  {/* Upload Drop Zone */}
+                  <div
+                    onDragEnter={chatImageUpload.handleDragEnter}
+                    onDragLeave={chatImageUpload.handleDragLeave}
+                    onDragOver={chatImageUpload.handleDragOver}
+                    onDrop={chatImageUpload.handleDrop}
+                    onClick={() => chatImageUpload.openFilePicker()}
+                    className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-all mb-4"
+                    style={{
+                      borderColor: chatImageUpload.isDragging ? "#f59e0b" : "var(--border-default)",
+                      background: chatImageUpload.isDragging ? "rgba(245, 158, 11, 0.05)" : "var(--bg-surface)",
+                    }}
+                  >
+                    <input
+                      ref={chatImageUpload.fileInputRef}
+                      type="file"
+                      accept="image/*,.heic,.heif"
+                      multiple
+                      onChange={chatImageUpload.handleFileInput}
+                      className="hidden"
+                    />
+                    <svg
+                      className="w-8 h-8 mx-auto mb-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      style={{ color: "var(--text-tertiary)" }}
                     >
-                      {new Date(job.timestamp).toLocaleTimeString()}
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                      Drop images here or click to upload
+                    </p>
+                    <p className="text-xs mt-1" style={{ color: "var(--text-tertiary)" }}>
+                      Supports HEIC, TIFF, JPG, PNG, WebP
+                    </p>
+                  </div>
+
+                  {/* Generated Images Grid */}
+                  {jobs.length > 0 && (
+                    <div className="grid grid-cols-3 gap-2">
+                      {jobs.flatMap(job =>
+                        job.imageSlots
+                          .filter(slot => slot.status === 'completed' && slot.imageUrl)
+                          .map((slot, idx) => (
+                            <div
+                              key={`${job.id}-${idx}`}
+                              className="group relative aspect-square rounded-lg overflow-hidden cursor-pointer"
+                              onClick={() => handleSelectChatImage({
+                                imageUrl: slot.imageUrl!,
+                                prompt: job.prompt,
+                                model: job.model,
+                                aspectRatio: job.aspectRatio,
+                              })}
+                            >
+                              <img
+                                src={slot.imageUrl}
+                                alt=""
+                                className="w-full h-full object-cover"
+                              />
+                              <div
+                                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                                style={{ background: "rgba(0, 0, 0, 0.6)" }}
+                              >
+                                <span className="text-xs font-medium px-3 py-1.5 rounded-full" style={{ background: "#f59e0b", color: "#000" }}>
+                                  Edit
+                                </span>
+                              </div>
+                            </div>
+                          ))
+                      )}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                /* Chat Interface */
+                <div className="flex-1 flex overflow-hidden">
+                  {/* Left: Image Preview */}
+                  <div className="w-1/2 p-4 flex flex-col border-r" style={{ borderColor: "var(--border-subtle)" }}>
+                    {/* Header */}
+                    <div className="flex items-center justify-between mb-3">
+                      <button
+                        onClick={handleChatBack}
+                        className="flex items-center gap-1 text-xs px-2 py-1 rounded"
+                        style={{ background: "var(--bg-surface)", color: "var(--text-secondary)" }}
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                        Back
+                      </button>
+                      <select
+                        value={chatSelectedModel}
+                        onChange={(e) => setChatSelectedModel(e.target.value)}
+                        className="text-xs px-2 py-1 rounded border"
+                        style={{
+                          background: "var(--bg-surface)",
+                          borderColor: "var(--border-default)",
+                          color: "var(--text-primary)",
+                        }}
+                      >
+                        {IMAGE_TO_IMAGE_MODELS.map(m => (
+                          <option key={m.id} value={m.id}>{m.name} ({m.price})</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Main Image */}
+                    <div
+                      className="flex-1 rounded-lg overflow-hidden cursor-pointer relative"
+                      style={{ background: "var(--bg-surface)" }}
+                      onClick={() => chatDisplayImage && setChatZoomImage(chatDisplayImage)}
+                    >
+                      {chatDisplayImage ? (
+                        <img
+                          src={chatDisplayImage}
+                          alt="Current"
+                          className="w-full h-full object-contain"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <p className="text-xs" style={{ color: "var(--text-tertiary)" }}>No image selected</p>
+                        </div>
+                      )}
+                      {chatDisplayImage && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleChatDownload(chatDisplayImage);
+                          }}
+                          className="absolute top-2 right-2 p-2 rounded-lg"
+                          style={{ background: "rgba(0,0,0,0.5)", color: "#fff" }}
+                          title="Download"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Context Images */}
+                    <div className="mt-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                          Context ({chatContextImages.length}/4)
+                        </span>
+                      </div>
+                      <div className="flex gap-2">
+                        {chatContextImages.map((img, idx) => (
+                          <div
+                            key={idx}
+                            className="relative w-14 h-14 rounded-lg overflow-hidden cursor-pointer group"
+                            style={{
+                              border: chatDisplayImage === img ? "2px solid #f59e0b" : "2px solid transparent",
+                            }}
+                            onClick={() => setChatDisplayImage(img)}
+                          >
+                            <img src={img} alt="" className="w-full h-full object-cover" />
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRemoveFromContext(img);
+                              }}
+                              className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                              style={{ background: "rgba(0,0,0,0.7)", color: "#fff" }}
+                            >
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </div>
+                        ))}
+                        {chatContextImages.length < 4 && (
+                          <button
+                            onClick={() => chatImageUpload.openFilePicker()}
+                            className="w-14 h-14 rounded-lg border-2 border-dashed flex items-center justify-center"
+                            style={{ borderColor: "var(--border-default)", color: "var(--text-tertiary)" }}
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                            </svg>
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
-                ))}
-              </div>
+
+                  {/* Right: Chat */}
+                  <div className="w-1/2 flex flex-col">
+                    {/* Messages */}
+                    <div
+                      ref={chatContainerRef}
+                      className="flex-1 overflow-y-auto p-4 space-y-4"
+                    >
+                      {chatMessages.map((msg) => (
+                        <div
+                          key={msg.id}
+                          className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                        >
+                          <div
+                            className="max-w-[85%] rounded-lg p-3"
+                            style={{
+                              background: msg.role === 'user' ? "var(--accent-primary)" : "var(--bg-surface)",
+                              color: msg.role === 'user' ? "var(--accent-foreground)" : "var(--text-primary)",
+                            }}
+                          >
+                            <p className="text-sm">{msg.content}</p>
+                            {msg.referenceImageCount && (
+                              <p className="text-xs mt-1 opacity-70">
+                                {msg.referenceImageCount} reference image{msg.referenceImageCount > 1 ? 's' : ''}
+                              </p>
+                            )}
+                            {msg.imageUrl && (
+                              <div
+                                className="mt-2 rounded-lg overflow-hidden cursor-pointer"
+                                onClick={() => {
+                                  setChatDisplayImage(msg.imageUrl!);
+                                  handleAddToContext(msg.imageUrl!);
+                                }}
+                              >
+                                <img
+                                  src={msg.imageUrl}
+                                  alt=""
+                                  className="w-full max-w-[200px] rounded-lg"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                      {isChatGenerating && (
+                        <div className="flex justify-start">
+                          <div
+                            className="rounded-lg p-3"
+                            style={{ background: "var(--bg-surface)" }}
+                          >
+                            <div className="flex items-center gap-2">
+                              <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none" style={{ color: "var(--accent-secondary)" }}>
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                              </svg>
+                              <span className="text-sm" style={{ color: "var(--text-tertiary)" }}>
+                                Generating...
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Input */}
+                    <div className="p-4 border-t" style={{ borderColor: "var(--border-subtle)" }}>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={chatInput}
+                          onChange={(e) => setChatInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !e.shiftKey) {
+                              e.preventDefault();
+                              handleChatGenerate();
+                            }
+                          }}
+                          placeholder="Describe how to edit the image..."
+                          className="flex-1 px-3 py-2 rounded-lg border text-sm"
+                          style={{
+                            background: "var(--bg-surface)",
+                            borderColor: "var(--border-default)",
+                            color: "var(--text-primary)",
+                          }}
+                          disabled={isChatGenerating}
+                        />
+                        <button
+                          onClick={handleChatGenerate}
+                          disabled={isChatGenerating || !chatInput.trim() || chatContextImages.length === 0}
+                          className="px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-40"
+                          style={{ background: "#f59e0b", color: "#000" }}
+                        >
+                          Send
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
+
+        {/* Zoom Modal */}
+        {chatZoomImage && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center"
+            style={{ background: "rgba(0, 0, 0, 0.9)" }}
+            onClick={() => setChatZoomImage(null)}
+          >
+            <button
+              className="absolute top-4 right-4 p-2 rounded-lg"
+              style={{ background: "rgba(255,255,255,0.1)", color: "#fff" }}
+              onClick={() => setChatZoomImage(null)}
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <img
+              src={chatZoomImage}
+              alt="Zoomed"
+              className="max-w-[90vw] max-h-[90vh] object-contain"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

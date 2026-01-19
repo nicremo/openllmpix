@@ -9,13 +9,23 @@ interface ImageLightboxProps {
   prompt: string;
   mode: "text-to-image" | "image-to-image";
   aspectRatio: string;
-  model: string; // Model ID used for generation
+  model: string;
+  modelName?: string;
   timestamp: number;
   referenceImages?: string[];
-  allImages?: string[]; // All images in the job for navigation
-  currentIndex?: number; // Current image index
+  allImages?: string[];
+  currentIndex?: number;
   onNavigate?: (index: number) => void;
-  provider?: string; // Optional provider info
+  provider?: string;
+  generationId?: string;
+  onOpenInlineChatStudio?: (data: {
+    imageUrl: string;
+    prompt: string;
+    model: string;
+    modelName?: string;
+    aspectRatio: string;
+    generationId?: string;
+  }) => void;
 }
 
 export default function ImageLightbox({
@@ -26,12 +36,15 @@ export default function ImageLightbox({
   mode,
   aspectRatio,
   model,
+  modelName,
   timestamp,
   referenceImages = [],
   allImages = [],
   currentIndex = 0,
   onNavigate,
   provider,
+  generationId,
+  onOpenInlineChatStudio,
 }: ImageLightboxProps) {
   // Handle ESC key to close
   useEffect(() => {
@@ -82,7 +95,7 @@ export default function ImageLightbox({
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `nano-banana-${timestamp}.png`;
+      a.download = `openllmpix-${timestamp}.png`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -227,153 +240,196 @@ export default function ImageLightbox({
         <div className="flex-1 overflow-y-auto overflow-x-hidden">
           <div className="flex flex-col lg:flex-row gap-6">
             {/* Image Section */}
-            <div className="flex-1 flex items-center justify-center min-h-0">
-              <div className="relative max-w-full">
-                <img
-                  src={imageUrl}
-                  alt={prompt}
-                  className="max-w-full max-h-[60vh] object-contain rounded-xl"
-                  style={{
-                    boxShadow: "0 10px 25px rgba(0, 0, 0, 0.3)",
-                  }}
-                />
-
-                {/* Image Counter */}
-                {hasMultipleImages && (
-                  <div
-                    className="absolute bottom-4 left-1/2 transform -translate-x-1/2 px-3 py-1.5 rounded-full text-xs font-medium"
+            <div className="flex-1 flex flex-col min-h-0">
+              {/* Main Image Display */}
+              <div className="flex-1 flex items-center justify-center">
+                <div className="relative max-w-full">
+                  <img
+                    src={imageUrl}
+                    alt={prompt}
+                    className="max-w-full max-h-[50vh] object-contain rounded-xl"
                     style={{
-                      background: "rgba(0, 0, 0, 0.7)",
-                      color: "var(--text-primary)",
-                      border: "1px solid rgba(255, 255, 255, 0.1)",
+                      boxShadow: "0 10px 25px rgba(0, 0, 0, 0.3)",
                     }}
-                  >
-                    {currentIndex + 1} / {allImages.length}
-                  </div>
-                )}
-              </div>
-            </div>
+                  />
 
-            {/* Info Section */}
-            <div className="lg:w-80 flex-shrink-0 space-y-4">
-              {/* Prompt */}
-              <div>
-                <h3 className="text-xs font-semibold mb-2 uppercase tracking-wide" style={{ color: "var(--text-secondary)" }}>
-                  Prompt
-                </h3>
-                <p className="text-sm leading-relaxed" style={{ color: "var(--text-primary)" }}>
-                  {prompt}
-                </p>
-              </div>
+                  {/* Model Tag */}
+                  {(modelName || model) && (
+                    <div
+                      className="absolute bottom-4 left-4 px-3 py-1 rounded-lg text-xs font-medium"
+                      style={{
+                        background: "rgba(0, 0, 0, 0.7)",
+                        color: "white",
+                        backdropFilter: "blur(4px)",
+                      }}
+                    >
+                      {modelName || model.split('/').pop()?.replace(/-/g, ' ')}
+                    </div>
+                  )}
 
-              {/* Model */}
-              {model && (
-                <div>
-                  <h4 className="text-xs font-semibold mb-2 uppercase tracking-wide" style={{ color: "var(--text-secondary)" }}>
-                    Model
-                  </h4>
-                  <div
-                    className="px-3 py-2 rounded-lg text-sm font-medium break-all"
-                    style={{
-                      background: "var(--bg-elevated)",
-                      color: "var(--text-primary)",
-                      border: "1px solid var(--border-subtle)",
-                    }}
-                  >
-                    {model}
-                  </div>
-                </div>
-              )}
-
-              {/* Mode */}
-              <div>
-                <h4 className="text-xs font-semibold mb-2 uppercase tracking-wide" style={{ color: "var(--text-secondary)" }}>
-                  Mode
-                </h4>
-                <div
-                  className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium"
-                  style={{
-                    background: "var(--bg-elevated)",
-                    color: "var(--text-primary)",
-                    border: "1px solid var(--border-subtle)",
-                  }}
-                >
-                  {mode === "text-to-image" ? (
-                    <>
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
-                      </svg>
-                      Text-to-Image
-                    </>
-                  ) : (
-                    <>
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      Image-to-Image
-                    </>
+                  {/* Image Counter */}
+                  {hasMultipleImages && (
+                    <div
+                      className="absolute bottom-4 left-1/2 transform -translate-x-1/2 px-3 py-1.5 rounded-full text-xs font-medium"
+                      style={{
+                        background: "rgba(0, 0, 0, 0.7)",
+                        color: "var(--text-primary)",
+                        border: "1px solid rgba(255, 255, 255, 0.1)",
+                      }}
+                    >
+                      {currentIndex + 1} / {allImages.length}
+                    </div>
                   )}
                 </div>
               </div>
 
-              {/* Aspect Ratio */}
-              <div>
-                <h4 className="text-xs font-semibold mb-2 uppercase tracking-wide" style={{ color: "var(--text-secondary)" }}>
-                  Aspect Ratio
-                </h4>
-                <p className="text-sm font-mono" style={{ color: "var(--text-primary)" }}>
-                  {aspectRatio}
-                </p>
-              </div>
+            </div>
 
-              {/* Provider */}
-              {provider && (
-                <div>
-                  <h4 className="text-xs font-semibold mb-2 uppercase tracking-wide" style={{ color: "var(--text-secondary)" }}>
-                    Provider
-                  </h4>
-                  <p className="text-sm" style={{ color: "var(--text-primary)" }}>
-                    {provider}
-                  </p>
-                </div>
-              )}
+            {/* Sidebar - Info Section */}
+            <div className="lg:w-96 flex-shrink-0 flex flex-col" style={{ maxHeight: "60vh" }}>
+              <div className="space-y-4 overflow-y-auto flex-1">
+                  {/* Prompt */}
+                  <div>
+                    <h3 className="text-xs font-semibold mb-2 uppercase tracking-wide" style={{ color: "var(--text-secondary)" }}>
+                      Prompt
+                    </h3>
+                    <p className="text-sm leading-relaxed" style={{ color: "var(--text-primary)" }}>
+                      {prompt}
+                    </p>
+                  </div>
 
-              {/* Timestamp */}
-              <div>
-                <h4 className="text-xs font-semibold mb-2 uppercase tracking-wide" style={{ color: "var(--text-secondary)" }}>
-                  Created
-                </h4>
-                <p className="text-sm" style={{ color: "var(--text-primary)" }}>
-                  {formatTimestamp(timestamp)}
-                </p>
-              </div>
-
-              {/* Reference Images */}
-              {referenceImages.length > 0 && (
-                <div>
-                  <h4 className="text-xs font-semibold mb-2 uppercase tracking-wide" style={{ color: "var(--text-secondary)" }}>
-                    Reference Images
-                  </h4>
-                  <div className="grid grid-cols-3 gap-2">
-                    {referenceImages.map((refImg, idx) => (
+                  {/* Model */}
+                  {model && (
+                    <div>
+                      <h4 className="text-xs font-semibold mb-2 uppercase tracking-wide" style={{ color: "var(--text-secondary)" }}>
+                        Model
+                      </h4>
                       <div
-                        key={idx}
-                        className="aspect-square rounded-lg overflow-hidden"
+                        className="px-3 py-2 rounded-lg text-sm font-medium break-all"
                         style={{
                           background: "var(--bg-elevated)",
+                          color: "var(--text-primary)",
                           border: "1px solid var(--border-subtle)",
                         }}
                       >
-                        <img
-                          src={refImg}
-                          alt={`Reference ${idx + 1}`}
-                          className="w-full h-full object-cover hover:scale-105 transition-transform cursor-pointer"
-                        />
+                        {model}
                       </div>
-                    ))}
+                    </div>
+                  )}
+
+                  {/* Mode */}
+                  <div>
+                    <h4 className="text-xs font-semibold mb-2 uppercase tracking-wide" style={{ color: "var(--text-secondary)" }}>
+                      Mode
+                    </h4>
+                    <div
+                      className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium"
+                      style={{
+                        background: "var(--bg-elevated)",
+                        color: "var(--text-primary)",
+                        border: "1px solid var(--border-subtle)",
+                      }}
+                    >
+                      {mode === "text-to-image" ? (
+                        <>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
+                          </svg>
+                          Text-to-Image
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          Image-to-Image
+                        </>
+                      )}
+                    </div>
                   </div>
+
+                  {/* Aspect Ratio */}
+                  <div>
+                    <h4 className="text-xs font-semibold mb-2 uppercase tracking-wide" style={{ color: "var(--text-secondary)" }}>
+                      Aspect Ratio
+                    </h4>
+                    <p className="text-sm font-mono" style={{ color: "var(--text-primary)" }}>
+                      {aspectRatio}
+                    </p>
+                  </div>
+
+                  {/* Provider */}
+                  {provider && (
+                    <div>
+                      <h4 className="text-xs font-semibold mb-2 uppercase tracking-wide" style={{ color: "var(--text-secondary)" }}>
+                        Provider
+                      </h4>
+                      <p className="text-sm" style={{ color: "var(--text-primary)" }}>
+                        {provider}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Timestamp */}
+                  <div>
+                    <h4 className="text-xs font-semibold mb-2 uppercase tracking-wide" style={{ color: "var(--text-secondary)" }}>
+                      Created
+                    </h4>
+                    <p className="text-sm" style={{ color: "var(--text-primary)" }}>
+                      {formatTimestamp(timestamp)}
+                    </p>
+                  </div>
+
+                  {/* Reference Images */}
+                  {referenceImages.length > 0 && (
+                    <div>
+                      <h4 className="text-xs font-semibold mb-2 uppercase tracking-wide" style={{ color: "var(--text-secondary)" }}>
+                        Reference Images
+                      </h4>
+                      <div className="grid grid-cols-3 gap-2">
+                        {referenceImages.map((refImg, idx) => (
+                          <div
+                            key={idx}
+                            className="aspect-square rounded-lg overflow-hidden"
+                            style={{
+                              background: "var(--bg-elevated)",
+                              border: "1px solid var(--border-subtle)",
+                            }}
+                          >
+                            <img
+                              src={refImg}
+                              alt={`Reference ${idx + 1}`}
+                              className="w-full h-full object-cover hover:scale-105 transition-transform cursor-pointer"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Edit in Chat Studio Link */}
+                  {onOpenInlineChatStudio && (
+                    <div className="pt-4 mt-4 border-t" style={{ borderColor: "var(--border-subtle)" }}>
+                      <button
+                        onClick={() => {
+                          onOpenInlineChatStudio({
+                            imageUrl: imageUrl,
+                            prompt,
+                            model,
+                            modelName,
+                            aspectRatio,
+                            generationId,
+                          });
+                          onClose();
+                        }}
+                        className="text-sm hover:underline transition-all"
+                        style={{ color: "#f59e0b" }}
+                      >
+                        Edit in Chat Studio →
+                      </button>
+                    </div>
+                  )}
                 </div>
-              )}
             </div>
           </div>
         </div>

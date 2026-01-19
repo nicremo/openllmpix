@@ -39,14 +39,17 @@
   --error-foreground: #450a0a;
   --warning: #eab308;
 
-  /* Focus Ring */
-  --ring: #3b82f6;
+  /* Focus Ring - Amber */
+  --ring: #f59e0b;
   --ring-offset: #0a0a0a;
 
   /* Radius */
   --radius-sm: 6px;
   --radius-md: 8px;
   --radius-lg: 12px;
+  --radius: 0.5rem;
+
+  /* Note: shadcn variables removed to avoid conflicts with our design system */
 }
 
 @theme inline {
@@ -95,9 +98,23 @@ body {
   background: var(--border-strong);
 }
 
-/* Focus visible styles */
+/* Focus visible styles - Amber */
 :focus-visible {
-  outline: 2px solid var(--ring);
+  outline: none;
+}
+
+/* Input/Textarea Focus - Amber glow */
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: #f59e0b !important;
+  box-shadow: 0 0 0 1px #f59e0b !important;
+  outline: none !important;
+}
+
+/* Button Focus - Subtle amber ring */
+button:focus-visible {
+  outline: 2px solid #f59e0b;
   outline-offset: 2px;
 }
 
@@ -138,4 +155,27 @@ button, a, input, textarea, select {
 
 .animate-spin {
   animation: spin 1s linear infinite;
+}
+
+/* Tab Trigger Active State */
+[data-slot="trigger"][data-state="active"] {
+  background: var(--bg-surface) !important;
+  color: var(--text-primary) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Dialog Animation */
+@keyframes dialog-pop-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+[data-state="open"][role="dialog"] {
+  animation: dialog-pop-in 0.2s ease-out;
 }
