@@ -109,6 +109,29 @@ export const PROVIDERS: Record<ProviderId, ProviderConfig> = {
   },
 };
 
+// Model-ID Mapping: Base ID → Provider-specific ID
+// Chat Studio uses base IDs, but providers expect different formats
+export const MODEL_ID_MAPPING: Record<ProviderId, Record<string, string>> = {
+  openrouter: {
+    "nano-banana-pro": "google/gemini-3-pro-image-preview",
+    "gemini-2.5-flash-image": "google/gemini-2.5-flash-image",
+    "gemini-2.0-flash-exp": "google/gemini-2.0-flash-exp:free",
+  },
+  "google-ai-studio": {
+    "nano-banana-pro": "nano-banana-pro",
+    "gemini-2.5-flash-image": "gemini-2.5-flash-image",
+    "gemini-2.0-flash-exp": "gemini-2.0-flash-exp",
+  },
+  fal: {
+    // fal.ai uses its own model IDs
+  },
+};
+
+// Map base model ID to provider-specific ID
+export function mapModelId(baseId: string, provider: ProviderId): string {
+  return MODEL_ID_MAPPING[provider]?.[baseId] ?? baseId;
+}
+
 // Get a specific provider config
 export function getProvider(id: ProviderId): ProviderConfig {
   const provider = PROVIDERS[id];
