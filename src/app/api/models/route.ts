@@ -37,14 +37,36 @@ export async function GET(request: NextRequest) {
 
     let models: ProviderModel[] = [];
     let source: "live" | "static" = "static";
+    const staticModels = providerConfig.models;
 
     // Try to get live models if the provider supports it
     if (providerConfig.supportsModelListing) {
       try {
         const adapter = getAdapter(providerId);
         if (adapter.supportsModelListing()) {
-          models = await adapter.listModels(apiKey || "");
-          source = "live";
+          const liveModels = await adapter.listModels(apiKey || "");
+
+          // Only use live models if we got at least as many as the static registry
+          // This prevents the dashboard from showing fewer models than expected
+          // when the live API filter is too restrictive
+          if (liveModels.length >= staticModels.length) {
+            models = liveModels;
+            source = "live";
+          } else {
+            // Merge: Use static models as base, update with live data where available
+            const liveModelIds = new Set(liveModels.map(m => m.id));
+            const mergedModels = [...staticModels];
+
+            // Add any live models that aren't in the static registry
+            for (const liveModel of liveModels) {
+              if (!mergedModels.some(m => m.id === liveModel.id)) {
+                mergedModels.push(liveModel);
+              }
+            }
+
+            models = mergedModels;
+            source = liveModelIds.size > 0 ? "live" : "static";
+          }
         }
       } catch {
         // Fall back to static models on error (silently)
@@ -53,7 +75,7 @@ export async function GET(request: NextRequest) {
 
     // Fall back to static models if live fetch failed or not supported
     if (models.length === 0) {
-      models = providerConfig.models;
+      models = staticModels;
       source = "static";
     }
 
