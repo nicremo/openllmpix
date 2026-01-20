@@ -90,7 +90,8 @@ const EXAMPLE_PROMPTS = {
 
 // Image-to-Image Models for Chat Studio
 const IMAGE_TO_IMAGE_MODELS = [
-  { id: 'google/gemini-3-pro-image-preview', name: 'Nano Banana Pro', price: '$0.05/img' },
+  { id: 'nano-banana-pro', name: 'Pro', desc: 'complex tasks', price: '$0.05/img' },
+  { id: 'gemini-2.5-flash-image', name: 'Nano Banana', desc: 'fast tasks', price: '$0.03/img' },
 ];
 
 // Build provider display names from registry
@@ -1444,7 +1445,7 @@ export default function Home() {
                         }}
                       >
                         {IMAGE_TO_IMAGE_MODELS.map(m => (
-                          <option key={m.id} value={m.id}>{m.name} ({m.price})</option>
+                          <option key={m.id} value={m.id}>{m.name} - {m.desc} ({m.price})</option>
                         ))}
                       </select>
                     </div>
