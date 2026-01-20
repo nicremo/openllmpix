@@ -37,7 +37,7 @@ readingTime: 6
 
 <h3>Web and Digital Display</h3>
 
-<p>For web use, resolution requirements are relatively modest. Most screens display images at 72-96 PPI (pixels per inch). A 1024x1024 pixel image works perfectly for social media posts, blog headers, and website graphics. Even lower resolutions often suffice when images appear at smaller display sizes.</p>
+<p>For web use, resolution requirements depend on device pixel ratios rather than fixed PPI values. Modern displays use device pixel ratios of 1x (standard), 2x (Retina/HiDPI), or 3x (high-end mobile). Best practice in 2025 is to provide images at 2x resolution (double the display dimensions) to ensure sharp rendering on most modern devices. A 1024x1024 pixel image displayed at 512x512 CSS pixels works perfectly for social media posts, blog headers, and website graphics while looking crisp on Retina displays.</p>
 
 <h3>Print Quality Standards</h3>
 

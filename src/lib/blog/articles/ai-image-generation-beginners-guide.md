@@ -86,7 +86,7 @@ readingTime: 7
 <p>As you begin your AI image generation journey, it's important to understand the legal landscape:</p>
 
 <ul>
-<li><strong>Copyright</strong> - Laws are still evolving. Generally, you may hold ownership rights when you actively guide the AI creation process, but review platform-specific terms</li>
+<li><strong>Copyright</strong> - Laws regarding AI-generated content are still evolving and vary by jurisdiction. Always review the specific terms of service for each platform and consult legal advice for commercial use</li>
 <li><strong>Commercial use</strong> - Different platforms have different licensing terms for commercial applications</li>
 <li><strong>Training data concerns</strong> - Be aware of ongoing debates about the datasets used to train AI models</li>
 </ul>
