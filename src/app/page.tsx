@@ -123,6 +123,7 @@ export default function Home() {
     referenceImages: string[];
     allImages: string[];
     currentIndex: number;
+    editPrompt?: string;
   } | null>(null);
 
   // Right Panel Tab
@@ -465,6 +466,27 @@ export default function Home() {
     }
   }, [lightboxData]);
 
+  // Open lightbox for Chat Studio images
+  const openChatLightbox = useCallback((
+    imageUrl: string,
+    editPrompt: string,
+    originalImage: ChatActiveImage | null
+  ) => {
+    setLightboxData({
+      isOpen: true,
+      imageUrl,
+      prompt: originalImage?.prompt || 'Chat Studio Edit',
+      mode: 'image-to-image',
+      aspectRatio: (originalImage?.aspectRatio || '1:1') as AspectRatio,
+      model: chatSelectedModel,
+      timestamp: Date.now(),
+      referenceImages: chatContextImages,
+      allImages: [imageUrl],
+      currentIndex: 0,
+      editPrompt,
+    });
+  }, [chatSelectedModel, chatContextImages]);
+
   // ===== Chat Studio Functions =====
 
   // Edit image via API (client-side)
@@ -722,6 +744,7 @@ export default function Home() {
           allImages={lightboxData.allImages}
           currentIndex={lightboxData.currentIndex}
           onNavigate={navigateLightbox}
+          editPrompt={lightboxData.editPrompt}
         />
       )}
 
@@ -1559,17 +1582,20 @@ export default function Home() {
                             )}
                             {msg.imageUrl && (
                               <div
-                                className="mt-2 rounded-lg overflow-hidden cursor-pointer"
-                                onClick={() => {
-                                  setChatDisplayImage(msg.imageUrl!);
-                                  handleAddToContext(msg.imageUrl!);
-                                }}
+                                className="mt-2 rounded-lg overflow-hidden cursor-pointer relative group"
+                                onClick={() => openChatLightbox(msg.imageUrl!, msg.content, chatActiveImage)}
                               >
                                 <img
                                   src={msg.imageUrl}
                                   alt=""
                                   className="w-full max-w-[200px] rounded-lg"
                                 />
+                                {/* Hover overlay */}
+                                <div
+                                  className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg"
+                                >
+                                  <span className="text-white text-xs font-medium">View Details</span>
+                                </div>
                               </div>
                             )}
                           </div>

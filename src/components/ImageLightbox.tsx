@@ -18,6 +18,7 @@ interface ImageLightboxProps {
   onNavigate?: (index: number) => void;
   provider?: string;
   generationId?: string;
+  editPrompt?: string;
   onOpenInlineChatStudio?: (data: {
     imageUrl: string;
     prompt: string;
@@ -44,6 +45,7 @@ export default function ImageLightbox({
   onNavigate,
   provider,
   generationId,
+  editPrompt,
   onOpenInlineChatStudio,
 }: ImageLightboxProps) {
   // Handle ESC key to close
@@ -291,12 +293,24 @@ export default function ImageLightbox({
                   {/* Prompt */}
                   <div>
                     <h3 className="text-xs font-semibold mb-2 uppercase tracking-wide" style={{ color: "var(--text-secondary)" }}>
-                      Prompt
+                      {editPrompt ? "Original Prompt" : "Prompt"}
                     </h3>
                     <p className="text-sm leading-relaxed" style={{ color: "var(--text-primary)" }}>
                       {prompt}
                     </p>
                   </div>
+
+                  {/* Edit Prompt (Chat Studio) */}
+                  {editPrompt && (
+                    <div>
+                      <h3 className="text-xs font-semibold mb-2 uppercase tracking-wide" style={{ color: "#f59e0b" }}>
+                        Edit Prompt
+                      </h3>
+                      <p className="text-sm leading-relaxed" style={{ color: "var(--text-primary)" }}>
+                        {editPrompt}
+                      </p>
+                    </div>
+                  )}
 
                   {/* Model */}
                   {model && (
