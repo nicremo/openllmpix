@@ -89,6 +89,12 @@ export default function ModelSelector({
     loadModels();
   }, [loadModels]);
 
+  // Must be before any early returns (React Hooks rules)
+  const selectedModelInfo = useMemo(
+    () => models.find((m) => m.id === selectedModel),
+    [models, selectedModel]
+  );
+
   // Loading state
   if (loading) {
     return (
@@ -100,11 +106,6 @@ export default function ModelSelector({
       </div>
     );
   }
-
-  const selectedModelInfo = useMemo(
-    () => models.find((m) => m.id === selectedModel),
-    [models, selectedModel]
-  );
 
   return (
     <div className="space-y-2">
