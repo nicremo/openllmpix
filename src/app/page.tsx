@@ -502,6 +502,18 @@ export default function Home() {
   // Handle chat generation
   const handleChatGenerate = useCallback(async () => {
     if (!chatInput.trim() || isChatGenerating || !chatActiveImage) return;
+
+    // Chat Studio requires Google AI Studio provider
+    if (apiConfig?.provider !== 'google-ai-studio') {
+      setChatMessages(prev => [...prev, {
+        id: `msg-${Date.now()}`,
+        role: 'assistant',
+        content: 'Chat Studio requires Google AI Studio as provider. Please update your API settings.',
+        timestamp: Date.now(),
+      }]);
+      return;
+    }
+
     if (chatContextImages.length === 0) {
       setChatMessages(prev => [...prev, {
         id: `msg-${Date.now()}`,
@@ -1330,6 +1342,28 @@ export default function Home() {
           {/* Chat Studio Tab */}
           {rightPanelTab === 'chat' && (
             <div className="flex-1 flex flex-col overflow-hidden">
+              {/* Provider Warning */}
+              {apiConfig?.provider !== 'google-ai-studio' && (
+                <div
+                  className="mx-4 mt-4 p-3 rounded-lg text-sm flex items-start gap-2"
+                  style={{
+                    background: "rgba(251, 191, 36, 0.1)",
+                    border: "1px solid rgba(251, 191, 36, 0.3)",
+                    color: "var(--text-primary)",
+                  }}
+                >
+                  <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: "#f59e0b" }}>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <div>
+                    <p className="font-medium" style={{ color: "#f59e0b" }}>Chat Studio requires Google AI Studio</p>
+                    <p className="text-xs mt-1" style={{ color: "var(--text-tertiary)" }}>
+                      Current provider: {PROVIDER_DISPLAY_NAMES[apiConfig?.provider || ""] || "None"}. Please update your API settings.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {!chatActiveImage ? (
                 /* Image Selection Grid */
                 <div className="flex-1 overflow-y-auto p-4">
