@@ -60,6 +60,11 @@ const nextConfig: NextConfig = {
       // - blob: Required for heic2any library (HEIC image conversion uses Web Workers)
       "worker-src 'self' blob:",
 
+      // frame-src: What can be embedded in iframes
+      // - 'self': Own domain
+      // - vercel.live: Vercel Live Feedback widget
+      "frame-src 'self' https://vercel.live",
+
       // frame-ancestors: Who can embed this site
       // - 'none': Prevent clickjacking - no embedding allowed
       "frame-ancestors 'none'",
