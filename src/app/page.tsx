@@ -56,6 +56,7 @@ interface ChatMessage {
   imageUrl?: string;
   timestamp: number;
   referenceImageCount?: number;
+  editPrompt?: string;
 }
 
 interface ChatActiveImage {
@@ -559,6 +560,7 @@ export default function Home() {
             : 'Hier ist dein bearbeitetes Bild:',
           imageUrl: newImageUrl,
           timestamp: Date.now(),
+          editPrompt: userMessage,
         };
         setChatMessages(prev => [...prev, assistantMsg]);
         setChatDisplayImage(newImageUrl);
@@ -1583,7 +1585,7 @@ export default function Home() {
                             {msg.imageUrl && (
                               <div
                                 className="mt-2 rounded-lg overflow-hidden cursor-pointer relative group"
-                                onClick={() => openChatLightbox(msg.imageUrl!, msg.content, chatActiveImage)}
+                                onClick={() => openChatLightbox(msg.imageUrl!, msg.editPrompt || msg.content, chatActiveImage)}
                               >
                                 <img
                                   src={msg.imageUrl}
