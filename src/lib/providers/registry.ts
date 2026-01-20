@@ -49,6 +49,12 @@ export const PROVIDERS: Record<ProviderId, ProviderConfig> = {
         capabilities: { textToImage: true, imageToImage: true },
       },
       {
+        id: "gemini-2.5-flash-image",
+        name: "Nano Banana",
+        description: "Fast Gemini 2.5 Flash model for quick image generation",
+        capabilities: { textToImage: true, imageToImage: true },
+      },
+      {
         id: "gemini-2.0-flash-exp",
         name: "Gemini 2.0 Flash Experimental",
         description: "Fast multimodal model with native image generation",
