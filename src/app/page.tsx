@@ -104,7 +104,6 @@ export default function Home() {
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>("1:1");
   const [selectedModel, setSelectedModel] = useState("");
   const [numberOfImages, setNumberOfImages] = useState(1);
-  const [isGenerating, setIsGenerating] = useState(false);
   const [jobs, setJobs] = useState<GenerationJob[]>([]);
   const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -302,7 +301,6 @@ export default function Home() {
       return;
     }
 
-    setIsGenerating(true);
     setError(null);
 
     // Create job immediately with all slots in loading state
@@ -412,9 +410,6 @@ export default function Home() {
         } else if (allFailed) {
           setError("All images failed to generate");
         }
-      })
-      .finally(() => {
-        setIsGenerating(false);
       });
   }, [prompt, aspectRatio, selectedModel, numberOfImages, apiConfig, mode, uploadedImages]);
 
@@ -1000,11 +995,11 @@ export default function Home() {
             )}
             <button
               onClick={handleGenerate}
-              disabled={isGenerating || !prompt.trim() || !selectedModel || (mode === "image-to-image" && uploadedImages.length === 0)}
+              disabled={!prompt.trim() || !selectedModel || (mode === "image-to-image" && uploadedImages.length === 0)}
               className="w-full h-10 rounded-lg text-sm font-medium disabled:opacity-40"
               style={{ background: "var(--accent-primary)", color: "var(--accent-foreground)" }}
             >
-              {isGenerating ? "Generating..." : "Generate"}
+              Generate
             </button>
           </div>
         </div>
