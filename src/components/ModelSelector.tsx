@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { ProviderId, ProviderModel } from "@/lib/providers/types";
 import { getProvider } from "@/lib/providers/registry";
 import CategorizedModelSelector from "./CategorizedModelSelector";
@@ -93,22 +93,25 @@ export default function ModelSelector({
   if (loading) {
     return (
       <div className="space-y-2">
-        <label className="block text-xs font-medium text-[var(--text-secondary)]">
+        <span className="block text-xs font-medium text-[var(--text-secondary)]">
           Model
-        </label>
+        </span>
         <div className="h-10 rounded-lg animate-pulse bg-[var(--bg-base)]" />
       </div>
     );
   }
 
-  const selectedModelInfo = models.find((m) => m.id === selectedModel);
+  const selectedModelInfo = useMemo(
+    () => models.find((m) => m.id === selectedModel),
+    [models, selectedModel]
+  );
 
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <label className="block text-xs font-medium text-[var(--text-secondary)]">
+        <span className="block text-xs font-medium text-[var(--text-secondary)]">
           Model
-        </label>
+        </span>
         {isLive && (
           <span className="text-xs px-1.5 py-0.5 rounded bg-[var(--bg-elevated)] text-[var(--success)]">
             Live

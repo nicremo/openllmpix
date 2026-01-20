@@ -45,7 +45,7 @@ export default function CategorizedModelSelector({
       <DropdownMenuTrigger
         disabled={disabled}
         className={cn(
-          "flex items-center gap-1.5 text-sm font-medium transition-all disabled:opacity-50",
+          "group flex items-center gap-1.5 text-sm font-medium transition-all disabled:opacity-50",
           "text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]",
           compact
             ? "px-3 py-2.5 bg-transparent"
@@ -62,7 +62,7 @@ export default function CategorizedModelSelector({
         ) : (
           <>
             <span>{selectedModelInfo?.name || "Select Model"}</span>
-            <ChevronDown className="w-4 h-4 opacity-60 transition-transform duration-200" />
+            <ChevronDown className="w-4 h-4 opacity-60 transition-transform duration-200 group-data-[state=open]:rotate-180" />
           </>
         )}
       </DropdownMenuTrigger>
