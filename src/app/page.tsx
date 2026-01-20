@@ -93,7 +93,7 @@ const EXAMPLE_PROMPTS = {
 // Image-to-Image Models for Chat Studio - dynamically from registry
 const getImgToImgModels = () => {
   const config = getProvider("openrouter");
-  return config.models.filter(m => m.capabilities.imageToImage);
+  return config.models.filter(m => m.capabilities?.imageToImage);
 };
 
 const IMAGE_TO_IMAGE_MODELS = getImgToImgModels();
@@ -141,7 +141,7 @@ export default function Home() {
   const [chatDisplayImage, setChatDisplayImage] = useState('');
   const [chatZoomImage, setChatZoomImage] = useState<string | null>(null);
   const [isChatGenerating, setIsChatGenerating] = useState(false);
-  const [chatSelectedModel, setChatSelectedModel] = useState(IMAGE_TO_IMAGE_MODELS[0].id);
+  const [chatSelectedModel, setChatSelectedModel] = useState(IMAGE_TO_IMAGE_MODELS[0]?.id || "");
 
   const chatContainerRef = useRef<HTMLDivElement>(null);
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { ChevronDown } from "lucide-react";
 import {
   DropdownMenu,
@@ -32,8 +33,11 @@ export default function CategorizedModelSelector({
   compact = false,
   disabled = false,
 }: CategorizedModelSelectorProps) {
-  const groupedModels = groupModelsByCategory(models);
-  const selectedModelInfo = models.find((m) => m.id === selectedModel);
+  const groupedModels = useMemo(() => groupModelsByCategory(models), [models]);
+  const selectedModelInfo = useMemo(
+    () => models.find((m) => m.id === selectedModel),
+    [models, selectedModel]
+  );
 
   return (
     <DropdownMenu>
