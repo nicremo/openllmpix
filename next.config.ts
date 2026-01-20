@@ -12,7 +12,9 @@ const nextConfig: NextConfig = {
       // - 'self': Own domain scripts
       // - 'unsafe-inline': Required for Next.js inline scripts and React hydration
       // - 'unsafe-eval': Required for Next.js development mode (hot reload)
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+      // - vercel.live: Vercel Live Feedback
+      // - va.vercel-scripts.com: Vercel Analytics
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://va.vercel-scripts.com",
 
       // style-src: CSS sources
       // - 'self': Own domain stylesheets
@@ -32,7 +34,9 @@ const nextConfig: NextConfig = {
       // - https://generativelanguage.googleapis.com: Google AI Studio (Gemini)
       // - https://fal.run: fal.ai image generation API
       // - https://api.fal.ai: fal.ai API
-      "connect-src 'self' https://openrouter.ai https://generativelanguage.googleapis.com https://fal.run https://api.fal.ai",
+      // - vercel.live: Vercel Live Feedback WebSocket
+      // - vitals.vercel-insights.com: Vercel Speed Insights
+      "connect-src 'self' https://openrouter.ai https://generativelanguage.googleapis.com https://fal.run https://api.fal.ai https://vercel.live wss://ws-us3.pusher.com https://vitals.vercel-insights.com",
 
       // font-src: Font sources
       // - 'self': Own domain fonts
