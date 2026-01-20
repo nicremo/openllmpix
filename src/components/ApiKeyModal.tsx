@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback } from 'react'
 import {
   getAllProviders,
   getStoredApiConfig,
@@ -34,25 +34,27 @@ export function isApiKeyConfigured(): boolean {
 }
 
 export default function ApiKeyModal({ isOpen, onClose, onSave }: ApiKeyModalProps) {
-  const [selectedProvider, setSelectedProvider] = useState<ProviderId>('openrouter')
-  const [apiKey, setApiKey] = useState('')
+  // Initialize state from stored config (lazy initializer runs once on mount)
+  const [selectedProvider, setSelectedProvider] = useState<ProviderId>(() => {
+    if (typeof window !== 'undefined') {
+      const config = getStoredApiConfig()
+      return config?.provider ?? 'openrouter'
+    }
+    return 'openrouter'
+  })
+  const [apiKey, setApiKey] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const config = getStoredApiConfig()
+      return config?.apiKey ?? ''
+    }
+    return ''
+  })
   const [showKey, setShowKey] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   // Show all providers for open source version
   const providers = getAllProviders()
-
-  // Load existing config on mount
-  useEffect(() => {
-    if (isOpen) {
-      const config = getStoredApiConfig()
-      if (config) {
-        setSelectedProvider(config.provider)
-        setApiKey(config.apiKey)
-      }
-    }
-  }, [isOpen])
 
   // Reset state when modal closes
   const handleClose = useCallback(() => {
