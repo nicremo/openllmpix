@@ -90,8 +90,8 @@ const EXAMPLE_PROMPTS = {
 
 // Image-to-Image Models for Chat Studio
 const IMAGE_TO_IMAGE_MODELS = [
-  { id: 'nano-banana-pro', name: 'Pro', desc: 'complex tasks', price: '$0.05/img' },
-  { id: 'gemini-2.5-flash-image', name: 'Nano Banana', desc: 'fast tasks', price: '$0.03/img' },
+  { id: 'nano-banana-pro', name: 'Pro', description: 'complex tasks', price: '$0.05/img' },
+  { id: 'gemini-2.5-flash-image', name: 'Nano Banana', description: 'fast tasks', price: '$0.03/img' },
 ];
 
 // Build provider display names from registry
@@ -138,8 +138,6 @@ export default function Home() {
   const [isChatGenerating, setIsChatGenerating] = useState(false);
   const [chatSelectedModel, setChatSelectedModel] = useState(IMAGE_TO_IMAGE_MODELS[0].id);
 
-  // Left Panel Collapse
-  const [isLeftPanelCollapsed, setIsLeftPanelCollapsed] = useState(false);
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
   // Chat Image Upload Hook
@@ -411,6 +409,10 @@ export default function Home() {
         } else if (allFailed) {
           setError("All images failed to generate");
         }
+      })
+      .catch((err) => {
+        console.error("Unexpected error in generation:", err);
+        setError(err instanceof Error ? err.message : "An unexpected error occurred");
       });
   }, [prompt, aspectRatio, selectedModel, numberOfImages, apiConfig, mode, uploadedImages]);
 
@@ -613,7 +615,6 @@ export default function Home() {
   // Select image for chat editing
   const handleSelectChatImage = useCallback(async (img: ChatActiveImage) => {
     setChatActiveImage(img);
-    setIsLeftPanelCollapsed(true);
 
     // Try to load existing session using the unique image ID
     const existingSession = await loadChatSession(img.id);
@@ -640,7 +641,6 @@ export default function Home() {
   // Go back from chat editing
   const handleChatBack = useCallback(() => {
     setChatActiveImage(null);
-    setIsLeftPanelCollapsed(false);
     setChatContextImages([]);
     setChatDisplayImage('');
     setChatMessages([]);
@@ -1000,7 +1000,7 @@ export default function Home() {
               className="w-full h-10 rounded-lg text-sm font-medium disabled:opacity-40"
               style={{ background: "var(--accent-primary)", color: "var(--accent-foreground)" }}
             >
-              Generate
+              {jobs.some(job => job.status === "generating") ? "Generating..." : "Generate"}
             </button>
           </div>
         </div>
@@ -1445,7 +1445,7 @@ export default function Home() {
                         }}
                       >
                         {IMAGE_TO_IMAGE_MODELS.map(m => (
-                          <option key={m.id} value={m.id}>{m.name} - {m.desc} ({m.price})</option>
+                          <option key={m.id} value={m.id}>{m.name} - {m.description} ({m.price})</option>
                         ))}
                       </select>
                     </div>
