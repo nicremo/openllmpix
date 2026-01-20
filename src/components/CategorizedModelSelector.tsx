@@ -88,16 +88,14 @@ export default function CategorizedModelSelector({
                 return (
                   <DropdownMenuItem
                     key={model.id}
-                    onClick={() => onModelChange(model.id)}
+                    role="menuitemradio"
+                    aria-checked={isSelected}
+                    onSelect={() => onModelChange(model.id)}
                     className={cn(
                       "flex items-center justify-between cursor-pointer py-2.5 px-3 rounded-md mx-1",
                       "text-[var(--text-primary)] transition-all duration-150",
                       "hover:bg-[var(--bg-surface)] focus:bg-[var(--bg-surface)]",
-                      isSelected && [
-                        "bg-[var(--accent-secondary)]/10",
-                        "border-l-2 border-[var(--accent-secondary)]",
-                        "pl-2.5"
-                      ]
+                      isSelected && "bg-[var(--accent-secondary)]/10 border-l-2 border-[var(--accent-secondary)] pl-2.5"
                     )}
                   >
                     <span className="truncate pr-2">{model.name}</span>
