@@ -1592,7 +1592,7 @@ export default function Home() {
                                 />
                                 {/* Hover overlay */}
                                 <div
-                                  className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg"
+                                  className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg pointer-events-none"
                                 >
                                   <span className="text-white text-xs font-medium">View Details</span>
                                 </div>
