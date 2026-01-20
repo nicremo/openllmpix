@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { ProviderId, ProviderModel } from "@/lib/providers/types";
 import { getProvider } from "@/lib/providers/registry";
+import CategorizedModelSelector from "./CategorizedModelSelector";
 
 interface ModelSelectorProps {
   provider: ProviderId;
@@ -88,82 +89,51 @@ export default function ModelSelector({
     loadModels();
   }, [loadModels]);
 
+  // Loading state
   if (loading) {
     return (
       <div className="space-y-2">
-        <label
-          className="block text-xs font-medium"
-          style={{ color: "var(--text-secondary)" }}
-        >
+        <label className="block text-xs font-medium text-[var(--text-secondary)]">
           Model
         </label>
-        <div
-          className="h-10 rounded-lg animate-pulse"
-          style={{ background: "var(--bg-base)" }}
-        />
+        <div className="h-10 rounded-lg animate-pulse bg-[var(--bg-base)]" />
       </div>
     );
   }
 
+  const selectedModelInfo = models.find((m) => m.id === selectedModel);
+
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <label
-          className="block text-xs font-medium"
-          style={{ color: "var(--text-secondary)" }}
-        >
+        <label className="block text-xs font-medium text-[var(--text-secondary)]">
           Model
         </label>
         {isLive && (
-          <span
-            className="text-xs px-1.5 py-0.5 rounded"
-            style={{ background: "var(--bg-elevated)", color: "var(--success)" }}
-          >
+          <span className="text-xs px-1.5 py-0.5 rounded bg-[var(--bg-elevated)] text-[var(--success)]">
             Live
           </span>
         )}
       </div>
 
-      <select
-        value={selectedModel}
-        onChange={(e) => onModelChange(e.target.value)}
-        className="w-full h-10 px-3 rounded-lg border text-sm appearance-none cursor-pointer"
-        style={{
-          background: "var(--bg-base)",
-          borderColor: "var(--border-default)",
-          color: "var(--text-primary)",
-          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23666'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
-          backgroundRepeat: "no-repeat",
-          backgroundPosition: "right 0.5rem center",
-          backgroundSize: "1.5em 1.5em",
-          paddingRight: "2.5rem",
-        }}
+      <CategorizedModelSelector
+        models={models}
+        selectedModel={selectedModel}
+        onModelChange={onModelChange}
         disabled={models.length === 0}
-      >
-        {models.length === 0 ? (
-          <option value="">No models available</option>
-        ) : (
-          models.map((model) => (
-            <option key={model.id} value={model.id}>
-              {model.name}
-              {model.pricing?.perImage ? ` ($${model.pricing.perImage.toFixed(4)}/img)` : ""}
-            </option>
-          ))
-        )}
-      </select>
+      />
 
       {error && (
-        <p className="text-xs" style={{ color: "var(--text-tertiary)" }}>
+        <p className="text-xs text-[var(--text-tertiary)]">
           {error} - Using cached models
         </p>
       )}
 
-      {selectedModel && models.length > 0 && (
-        <p className="text-xs" style={{ color: "var(--text-tertiary)" }}>
-          {(() => {
-            const desc = models.find((m) => m.id === selectedModel)?.description || "";
-            return desc.length > 80 ? desc.slice(0, 80) + "..." : desc;
-          })()}
+      {selectedModelInfo?.description && (
+        <p className="text-xs text-[var(--text-tertiary)]">
+          {selectedModelInfo.description.length > 80
+            ? selectedModelInfo.description.slice(0, 80) + "..."
+            : selectedModelInfo.description}
         </p>
       )}
     </div>
