@@ -7,7 +7,8 @@ import ApiKeyModal, {
 } from "@/components/ApiKeyModal";
 import ModelSelector from "@/components/ModelSelector";
 import ImageLightbox from "@/components/ImageLightbox";
-import { getAllProviders, mapModelId } from "@/lib/providers/registry";
+import { getAllProviders, getProvider, mapModelId } from "@/lib/providers/registry";
+import CategorizedModelSelector from "@/components/CategorizedModelSelector";
 import { getClientAdapter } from "@/lib/providers/client-adapters";
 import type { ProviderId, GenerateRequest } from "@/lib/providers/types";
 import { useImageUpload } from "@/hooks/useImageUpload";
@@ -89,11 +90,13 @@ const EXAMPLE_PROMPTS = {
   ],
 };
 
-// Image-to-Image Models for Chat Studio
-const IMAGE_TO_IMAGE_MODELS = [
-  { id: 'nano-banana-pro', name: 'Pro', description: 'complex tasks', price: '$0.05/img' },
-  { id: 'gemini-2.5-flash-image', name: 'Nano Banana', description: 'fast tasks', price: '$0.03/img' },
-];
+// Image-to-Image Models for Chat Studio - dynamically from registry
+const getImgToImgModels = () => {
+  const config = getProvider("openrouter");
+  return config.models.filter(m => m.capabilities?.imageToImage);
+};
+
+const IMAGE_TO_IMAGE_MODELS = getImgToImgModels();
 
 // Build provider display names from registry
 const PROVIDER_DISPLAY_NAMES: Record<string, string> = Object.fromEntries(
@@ -138,7 +141,7 @@ export default function Home() {
   const [chatDisplayImage, setChatDisplayImage] = useState('');
   const [chatZoomImage, setChatZoomImage] = useState<string | null>(null);
   const [isChatGenerating, setIsChatGenerating] = useState(false);
-  const [chatSelectedModel, setChatSelectedModel] = useState(IMAGE_TO_IMAGE_MODELS[0].id);
+  const [chatSelectedModel, setChatSelectedModel] = useState(IMAGE_TO_IMAGE_MODELS[0]?.id || "");
 
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
@@ -1449,7 +1452,7 @@ export default function Home() {
                   {/* Left: Image Preview */}
                   <div className="w-1/2 p-4 flex flex-col border-r" style={{ borderColor: "var(--border-subtle)" }}>
                     {/* Header */}
-                    <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center mb-3">
                       <button
                         onClick={handleChatBack}
                         className="flex items-center gap-1 text-xs px-2 py-1 rounded"
@@ -1460,20 +1463,6 @@ export default function Home() {
                         </svg>
                         Back
                       </button>
-                      <select
-                        value={chatSelectedModel}
-                        onChange={(e) => setChatSelectedModel(e.target.value)}
-                        className="text-xs px-2 py-1 rounded border"
-                        style={{
-                          background: "var(--bg-surface)",
-                          borderColor: "var(--border-default)",
-                          color: "var(--text-primary)",
-                        }}
-                      >
-                        {IMAGE_TO_IMAGE_MODELS.map(m => (
-                          <option key={m.id} value={m.id}>{m.name} - {m.description} ({m.price})</option>
-                        ))}
-                      </select>
                     </div>
 
                     {/* Main Image */}
@@ -1623,9 +1612,25 @@ export default function Home() {
                       )}
                     </div>
 
-                    {/* Input */}
-                    <div className="p-4 border-t" style={{ borderColor: "var(--border-subtle)" }}>
-                      <div className="flex gap-2">
+                    {/* Input - Combined bar with model selector */}
+                    <div className="p-3 border-t" style={{ borderColor: "var(--border-subtle)" }}>
+                      <div
+                        className="flex items-center rounded-xl border overflow-hidden"
+                        style={{ borderColor: "var(--border-default)", background: "var(--bg-surface)" }}
+                      >
+                        {/* Model Selector - compact */}
+                        <CategorizedModelSelector
+                          models={IMAGE_TO_IMAGE_MODELS}
+                          selectedModel={chatSelectedModel}
+                          onModelChange={setChatSelectedModel}
+                          compact
+                          disabled={isChatGenerating}
+                        />
+
+                        {/* Divider */}
+                        <div className="w-px h-6 bg-[var(--border-default)]" />
+
+                        {/* Input */}
                         <input
                           type="text"
                           value={chatInput}
@@ -1636,22 +1641,22 @@ export default function Home() {
                               handleChatGenerate();
                             }
                           }}
-                          placeholder="Describe how to edit the image..."
-                          className="flex-1 px-3 py-2 rounded-lg border text-sm"
-                          style={{
-                            background: "var(--bg-surface)",
-                            borderColor: "var(--border-default)",
-                            color: "var(--text-primary)",
-                          }}
+                          placeholder="Describe your edit..."
+                          className="flex-1 px-3 py-2.5 bg-transparent border-0 text-sm focus:outline-none"
+                          style={{ color: "var(--text-primary)" }}
                           disabled={isChatGenerating}
                         />
+
+                        {/* Send Button */}
                         <button
                           onClick={handleChatGenerate}
                           disabled={isChatGenerating || !chatInput.trim() || chatContextImages.length === 0}
-                          className="px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-40"
+                          className="px-4 py-2.5 disabled:opacity-40 transition-opacity"
                           style={{ background: "#f59e0b", color: "#000" }}
                         >
-                          Send
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                          </svg>
                         </button>
                       </div>
                     </div>

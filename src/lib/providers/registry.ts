@@ -13,18 +13,88 @@ export const PROVIDERS: Record<ProviderId, ProviderConfig> = {
     helpText: "Get your API key from OpenRouter",
     baseUrl: "https://openrouter.ai/api/v1",
     supportsModelListing: true,
-    defaultModel: "google/gemini-2.0-flash-exp:free",
+    defaultModel: "google/gemini-2.5-flash-image-preview:free",
     models: [
+      // === Google Gemini ===
       {
-        id: "google/gemini-2.0-flash-exp:free",
-        name: "Gemini 2.0 Flash (Free)",
-        description: "Google's latest multimodal model with image generation",
+        id: "google/gemini-2.5-flash-image-preview:free",
+        name: "Gemini 2.5 Flash Image (Free)",
+        description: "Free tier with rate limits",
         capabilities: { textToImage: true, imageToImage: true },
       },
       {
-        id: "google/gemini-2.5-flash-preview-05-20",
-        name: "Gemini 2.5 Flash Preview",
+        id: "google/gemini-2.5-flash-image-preview",
+        name: "Gemini 2.5 Flash Image Preview",
+        description: "Fast image generation ~$0.039/img",
         capabilities: { textToImage: true, imageToImage: true },
+      },
+      {
+        id: "google/gemini-2.5-flash-image",
+        name: "Gemini 2.5 Flash Image (GA)",
+        description: "General availability version ~$0.039/img",
+        capabilities: { textToImage: true, imageToImage: true },
+      },
+      {
+        id: "google/gemini-3-pro-image-preview",
+        name: "Nano Banana Pro",
+        description: "Most advanced, best quality ~$0.134/img",
+        capabilities: { textToImage: true, imageToImage: true },
+      },
+
+      // === Black Forest Labs FLUX.2 ===
+      {
+        id: "black-forest-labs/flux.2-klein-4b",
+        name: "FLUX.2 Klein 4B",
+        description: "Fastest & cheapest ~$0.014/img",
+        capabilities: { textToImage: true, imageToImage: false },
+      },
+      {
+        id: "black-forest-labs/flux.2-pro",
+        name: "FLUX.2 Pro",
+        description: "Professional quality ~$0.03/img",
+        capabilities: { textToImage: true, imageToImage: false },
+      },
+      {
+        id: "black-forest-labs/flux.2-flex",
+        name: "FLUX.2 Flex",
+        description: "Flexible with image input ~$0.06/img",
+        capabilities: { textToImage: true, imageToImage: true },
+      },
+      {
+        id: "black-forest-labs/flux.2-max",
+        name: "FLUX.2 Max",
+        description: "Maximum quality ~$0.07/img",
+        capabilities: { textToImage: true, imageToImage: false },
+      },
+
+      // === OpenAI ===
+      {
+        id: "openai/gpt-5-image",
+        name: "GPT-5 Image",
+        description: "OpenAI's flagship image model",
+        capabilities: { textToImage: true, imageToImage: true },
+      },
+      {
+        id: "openai/gpt-5-image-mini",
+        name: "GPT-5 Image Mini",
+        description: "Faster, more affordable GPT-5 Image",
+        capabilities: { textToImage: true, imageToImage: true },
+      },
+
+      // === ByteDance ===
+      {
+        id: "bytedance-seed/seedream-4.5",
+        name: "Seedream 4.5",
+        description: "ByteDance's image model ~$0.04/img",
+        capabilities: { textToImage: true, imageToImage: false },
+      },
+
+      // === Other ===
+      {
+        id: "sourceful/riverflow-v2-standard-preview",
+        name: "Riverflow V2",
+        description: "High quality ~$0.035/img",
+        capabilities: { textToImage: true, imageToImage: false },
       },
     ],
   },
@@ -113,9 +183,15 @@ export const PROVIDERS: Record<ProviderId, ProviderConfig> = {
 // Chat Studio uses base IDs, but providers expect different formats
 export const MODEL_ID_MAPPING: Record<ProviderId, Record<string, string>> = {
   openrouter: {
+    // Google Gemini
     "nano-banana-pro": "google/gemini-3-pro-image-preview",
     "gemini-2.5-flash-image": "google/gemini-2.5-flash-image",
     "gemini-2.0-flash-exp": "google/gemini-2.0-flash-exp:free",
+    // FLUX.2 (for img2img support)
+    "flux.2-flex": "black-forest-labs/flux.2-flex",
+    // OpenAI
+    "gpt-5-image": "openai/gpt-5-image",
+    "gpt-5-image-mini": "openai/gpt-5-image-mini",
   },
   "google-ai-studio": {
     "nano-banana-pro": "nano-banana-pro",
