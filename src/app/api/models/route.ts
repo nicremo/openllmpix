@@ -46,6 +46,11 @@ export async function GET(request: NextRequest) {
         if (adapter.supportsModelListing()) {
           const liveModels = await adapter.listModels(apiKey || "");
 
+          // Null guard - ensure we got a valid array
+          if (!liveModels || !Array.isArray(liveModels)) {
+            throw new Error("Invalid response from listModels");
+          }
+
           // Only use live models if we got at least as many as the static registry
           // This prevents the dashboard from showing fewer models than expected
           // when the live API filter is too restrictive
@@ -54,18 +59,16 @@ export async function GET(request: NextRequest) {
             source = "live";
           } else {
             // Merge: Use static models as base, update with live data where available
-            const liveModelIds = new Set(liveModels.map(m => m.id));
-            const mergedModels = [...staticModels];
+            const modelMap = new Map<string, ProviderModel>();
 
-            // Add any live models that aren't in the static registry
-            for (const liveModel of liveModels) {
-              if (!mergedModels.some(m => m.id === liveModel.id)) {
-                mergedModels.push(liveModel);
-              }
-            }
+            // Add static models first
+            staticModels.forEach(model => modelMap.set(model.id, model));
 
-            models = mergedModels;
-            source = liveModelIds.size > 0 ? "live" : "static";
+            // Override/add with live models (live data takes priority)
+            liveModels.forEach(model => modelMap.set(model.id, model));
+
+            models = Array.from(modelMap.values());
+            source = liveModels.length > 0 ? "live" : "static";
           }
         }
       } catch {
