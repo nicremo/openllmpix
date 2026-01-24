@@ -23,7 +23,7 @@ readingTime: 7
 
 <p>The img2img process then reconstructs a new image that maintains the content from your source while expressing it through the artistic language of your chosen style. Advanced models perform this reconstruction iteratively, refining the result until content and style blend seamlessly together.</p>
 
-<p>Modern implementations have become remarkably sophisticated. The latest diffusion-based models like Stable Diffusion XL and Flux can interpret style from text descriptions alone, eliminating the need for reference images. This text-guided approach offers unprecedented flexibility, allowing you to describe exactly the artistic qualities you want.</p>
+<p>Modern implementations have become remarkably sophisticated. The latest diffusion-based models like Stable Diffusion XL and FLUX can interpret style from text descriptions alone, eliminating the need for reference images. This text-guided approach offers unprecedented flexibility, allowing you to describe exactly the artistic qualities you want.</p>
 
 <h2>Popular Style Transfer Categories and Techniques</h2>
 

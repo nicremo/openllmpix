@@ -127,7 +127,7 @@ readingTime: 6
 
 <h2>The Future of AI Image Quality</h2>
 
-<p>AI image generation technology continues advancing rapidly. Native resolutions are increasing, with some models now supporting 4K output directly. Quality improvements come from larger training datasets, more sophisticated architectures, and better understanding of human visual perception.</p>
+<p>AI image generation technology continues advancing rapidly. While native resolutions are increasing, most major generators still produce images in the 1K-2K pixel range (typically 1024x1024 to 2048x2048). True 4K output (3840x2160 or higher) requires upscaling with dedicated super-resolution tools. Quality improvements come from larger training datasets, more sophisticated architectures, and better understanding of human visual perception.</p>
 
 <p>Emerging techniques like diffusion model refinement, super-resolution networks, and hybrid approaches promise even higher quality in coming years. Staying informed about these developments through resources and comparison platforms helps you leverage the best available technology.</p>
 

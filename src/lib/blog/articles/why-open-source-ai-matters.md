@@ -11,7 +11,7 @@ readingTime: 7
 
 <h2>The Open Source AI Revolution</h2>
 
-<p>Open source AI is fundamentally transforming how artificial intelligence is developed, distributed, and used across the globe. In 2025, over 89% of organizations using AI incorporate open source components in their infrastructure, and 65% of new AI models released are open source. This is not a trend; it is a paradigm shift that is reshaping the future of technology. Platforms like <a href="https://openllmpix.com">OPENLLMPIX</a> embody this movement, providing open source AI tools that anyone can access, use, and build upon.</p>
+<p>Open source AI is fundamentally transforming how artificial intelligence is developed, distributed, and used across the globe. In 2025, over 89% of organizations using AI incorporate open source components in their infrastructure, and 65.7% of foundation models released in 2023 were open source, according to the <a href="https://hai.stanford.edu/ai-index/2024-ai-index-report/research-and-development">Stanford HAI AI Index 2024</a>. This is not a trend; it is a paradigm shift that is reshaping the future of technology. Platforms like <a href="https://openllmpix.com">OPENLLMPIX</a> embody this movement, providing open source AI tools that anyone can access, use, and build upon.</p>
 
 <p>The concentration of AI power in the hands of a few major corporations poses significant risks to innovation, competition, and democratic values. Open source AI offers a compelling alternative: a future where the most transformative technology of our time remains accessible to everyone, not just those with the deepest pockets.</p>
 

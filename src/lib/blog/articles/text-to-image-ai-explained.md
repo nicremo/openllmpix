@@ -13,7 +13,7 @@ readingTime: 6
 
 <p>Text-to-image AI represents one of the most remarkable breakthroughs in artificial intelligence. This technology allows users to generate stunning, original images simply by typing a description in natural language. Whether you're a designer seeking quick concept art, a marketer needing custom visuals, or a creative exploring new artistic possibilities, text-to-image AI has fundamentally changed how we create visual content.</p>
 
-<p>The text-to-image AI market has exploded in recent years, with global investment exceeding $12 billion and over 500 million active users worldwide. Platforms like <a href="https://openllmpix.com">OPENLLMPIX</a> make it easier than ever to compare and test different AI image generators, helping creators find the perfect tool for their specific needs.</p>
+<p>The text-to-image AI market has experienced rapid growth, with market valuations ranging from several hundred million to several billion dollars depending on the scope of analysis, and projections suggesting substantial expansion through 2030. Platforms like <a href="https://openllmpix.com">OPENLLMPIX</a> make it easier than ever to compare and test different AI image generators, helping creators find the perfect tool for their specific needs.</p>
 
 <h2>How Text-to-Image AI Technology Works</h2>
 
@@ -23,11 +23,11 @@ readingTime: 6
 
 <p>Diffusion models work by learning to reverse a gradual noising process. During training, the AI adds random noise to millions of images until they become pure static. The model then learns to reverse this process, gradually removing noise to create coherent images. When you provide a text prompt, the model uses this learned denoising ability to generate images that match your description.</p>
 
-<p>Popular diffusion-based models include Stable Diffusion XL, FLUX.2 from Black Forest Labs, and Google's Imagen 4. These models excel at creating highly detailed, photorealistic images with generation times typically between 2-8 seconds.</p>
+<p>Popular diffusion-based models include Stable Diffusion XL, FLUX.1 from Black Forest Labs, and Google's Imagen 4. These models excel at creating highly detailed, photorealistic images. Generation times vary significantly based on hardware: high-end GPUs like the RTX 4090 can produce images in 2-8 seconds, while mid-range GPUs (RTX 3070/3080) typically require 20-45 seconds per image.</p>
 
 <h3>Autoregressive Models: A New Approach</h3>
 
-<p>OpenAI's GPT-4o uses an autoregressive approach instead of diffusion. This method generates images token by token, similar to how large language models produce text. While this approach offers exceptional prompt understanding and coherence, it tends to be slower than diffusion models. However, GPT-4o has achieved remarkable results, claiming top positions in AI image generation leaderboards with an ELO score of 1353.</p>
+<p>OpenAI's GPT-4o employs a hybrid architecture that combines autoregressive and diffusion approaches. The model uses an autoregressive transformer backbone to generate image tokens sequentially, similar to text generation, but then utilizes a diffusion-based decoder to render the final image from these tokens. This hybrid design enables exceptional prompt understanding and coherence while maintaining high visual fidelity. GPT-4o has achieved strong results in AI image generation benchmarks, though it tends to be slower than pure diffusion models.</p>
 
 <h2>Key Components of AI Image Generation</h2>
 

@@ -1,6 +1,6 @@
 ---
 slug: "ai-tools-graphic-designers-2025"
-title: "15 Best AI Tools for Graphic Designers in 2025: Complete Guide"
+title: "8 Best AI Tools for Graphic Designers in 2025: Complete Guide"
 excerpt: "Discover the top AI tools for graphic designers that streamline workflows, boost creativity, and save hours of manual work. From Adobe Firefly to Midjourney - find your perfect AI design assistant."
 category: "guide"
 tags: ["design", "tools", "AI", "workflow", "productivity"]

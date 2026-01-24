@@ -87,7 +87,7 @@ readingTime: 9
 
 <h2>LinkedIn Strategy: Professional with Personality</h2>
 
-<p>LinkedIn has seen a 23% drop in impressions in 2025, with formal corporate content performing worse than ever. However, conversational content with engaging visuals thrives—polls see 158% more impressions, carousels drive 247% more interactions.</p>
+<p>LinkedIn engagement dynamics have shifted significantly, with formal corporate content performing worse than ever. However, conversational content with engaging visuals thrives—according to <a href="https://metricool.com/linkedin-trends-study/" target="_blank" rel="noopener noreferrer">Metricool's 2025 LinkedIn study</a>, polls generate approximately 206% more impressions than other post types, while <a href="https://buffer.com/resources/linkedin-statistics/" target="_blank" rel="noopener noreferrer">Buffer reports</a> that carousels drive around 278% more engagement than video content.</p>
 
 <p>For LinkedIn AI images:</p>
 

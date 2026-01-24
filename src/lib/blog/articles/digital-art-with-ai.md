@@ -11,9 +11,9 @@ readingTime: 7
 
 <h2>The Evolution of Digital Art Through AI</h2>
 
-<p>Digital art has undergone a remarkable transformation with the integration of artificial intelligence. The digital artwork market is projected to grow from USD 5.8 billion in 2025 to USD 17.72 billion by 2032, reflecting the massive shift toward AI-enhanced creative processes. For artists willing to embrace these changes, unprecedented opportunities await.</p>
+<p>Digital art has undergone a remarkable transformation with the integration of artificial intelligence. According to <a href="https://www.coherentmarketinsights.com/industry-reports/digital-artwork-market" target="_blank" rel="noopener">Coherent Market Insights</a>, the digital artwork market is projected to grow from USD 5.8 billion in 2025 to USD 17.72 billion by 2032, reflecting the massive shift toward AI-enhanced creative processes. For artists willing to embrace these changes, unprecedented opportunities await.</p>
 
-<p>According to recent surveys, 70% of professional artists now use AI-powered tools in their creative workflows, with 40% of studios incorporating AI-generated art into production pipelines. This is not a replacement of human creativity but rather its amplification. Artists increasingly act as directors, defining tone, narrative, and visual feel while AI handles technical execution.</p>
+<p>Recent industry surveys indicate that a growing number of professional artists now incorporate AI-powered tools into their creative workflows, with many studios integrating AI-generated art into production pipelines. This is not a replacement of human creativity but rather its amplification. Artists increasingly act as directors, defining tone, narrative, and visual feel while AI handles technical execution.</p>
 
 <h2>How AI Is Transforming the Creative Process</h2>
 
@@ -73,7 +73,7 @@ readingTime: 7
 
 <h3>Industry Leaders</h3>
 
-<p>Midjourney 6.0 offers improved photorealism and a unique combination of advanced features, user-friendly interface, and accessible pricing. Adobe Firefly integrates directly with Photoshop through Generative Fill and Generative Expand, streamlining workflows for existing Creative Cloud users.</p>
+<p>The latest versions of Midjourney offer improved photorealism and a unique combination of advanced features, user-friendly interface, and accessible pricing. Adobe Firefly integrates directly with Photoshop through Generative Fill and Generative Expand, streamlining workflows for existing Creative Cloud users.</p>
 
 <h3>Accessible Entry Points</h3>
 

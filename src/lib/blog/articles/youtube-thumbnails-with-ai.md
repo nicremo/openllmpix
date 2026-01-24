@@ -97,7 +97,30 @@ readingTime: 7
 
 <h2>A/B Testing Your AI Thumbnails</h2>
 
-<p>YouTube's built-in A/B testing feature has transformed thumbnail optimization from guesswork into data science. Upload two thumbnail versions for the same video, and YouTube's algorithm determines which performs better with your actual audience.</p>
+<p>YouTube's built-in "Test & Compare" A/B testing feature has transformed thumbnail optimization from guesswork into data science. Upload multiple thumbnail versions for the same video, and YouTube's algorithm determines which performs better with your actual audience.</p>
+
+<h3>Eligibility Requirements for Test & Compare</h3>
+
+<p>Before you can use this feature, your channel must meet specific requirements:</p>
+
+<p><strong>Advanced Features Required:</strong> Your channel must have YouTube's Advanced Features enabled. This requires phone verification and a clean Community Guidelines standing.</p>
+
+<p><strong>Rolling Rollout:</strong> YouTube is gradually rolling out Test & Compare to eligible channels. Even with Advanced Features enabled, you may need to wait until your channel gains access.</p>
+
+<p><strong>Supported Content Types:</strong></p>
+<ul>
+<li>Public long-form videos</li>
+<li>Livestream replays</li>
+<li>Podcasts</li>
+</ul>
+
+<p><strong>Not Available For:</strong></p>
+<ul>
+<li>YouTube Shorts</li>
+<li>YouTube Kids content</li>
+<li>Age-restricted videos</li>
+<li>Private or unlisted videos</li>
+</ul>
 
 <h3>How to Run Effective Thumbnail Tests</h3>
 

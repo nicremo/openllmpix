@@ -66,7 +66,7 @@ readingTime: 8
 
 <h3>Transformer Architecture</h3>
 
-<p>Newer models like Stable Diffusion 3 have adopted Transformer-based architectures (DiT - Diffusion Transformer). Transformers excel at understanding relationships across the entire image and between text and visual elements, leading to better prompt comprehension and more coherent outputs.</p>
+<p>Newer models like Stable Diffusion 3 have adopted Transformer-based architectures, specifically the MMDiT (Multimodal Diffusion Transformer), which builds upon the original DiT (Diffusion Transformer) architecture introduced by Peebles and Xie in 2023. MMDiT uses separate processing tracks for text and image data that are combined through joint attention operations, enabling superior understanding of relationships between text and visual elements. This leads to better prompt comprehension and more coherent outputs.</p>
 
 <h2>Latent Space: Working in Compressed Dimensions</h2>
 
@@ -131,7 +131,7 @@ readingTime: 8
 <li><strong>Text alignment</strong> - The model learns to connect text concepts with visual features</li>
 </ol>
 
-<p>For instance, Stable Diffusion's main model contains approximately 860 million parameters, all tuned through extensive training on diverse image datasets.</p>
+<p>For instance, Stable Diffusion 1.5's U-Net contains approximately 860 million parameters, with an additional 123 million in the CLIP text encoder, totaling roughly 983 million parameters. More advanced models like SDXL scale this up significantly with a 2.6 billion parameter U-Net (3.5 billion total), while Stable Diffusion 3's MMDiT architecture ranges from 800 million to 8 billion parameters depending on the variant.</p>
 
 <h2>Current Limitations and Ongoing Research</h2>
 

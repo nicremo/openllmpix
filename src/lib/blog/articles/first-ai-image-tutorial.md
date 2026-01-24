@@ -33,13 +33,13 @@ readingTime: 7
 
 <h3>Option A: Browser-Based Tools (Easiest)</h3>
 
-<p><strong>Microsoft Bing Image Creator</strong> - Free, requires only a Microsoft account. Great for beginners due to its simple interface and reliable results.</p>
+<p><strong>Bing Image Creator</strong> - Free, requires only a Microsoft account. Offers multiple AI models including DALL-E 3 and GPT-4o. Great for beginners due to its simple interface and 15 free fast generations per day.</p>
 
 <p><strong>OPENLLMPIX</strong> - Perfect for comparing different AI models. Visit <a href="https://openllmpix.com">openllmpix.com</a> to test multiple generators and find which style suits you best.</p>
 
 <h3>Option B: Subscription Services</h3>
 
-<p><strong>Midjourney</strong> - Exceptional quality, especially for artistic images. Operates through Discord.</p>
+<p><strong>Midjourney</strong> - Exceptional quality, especially for artistic images. Available through their web app at midjourney.com or via Discord.</p>
 
 <p><strong>DALL-E 3</strong> - Accessible through ChatGPT Plus. Excellent at understanding complex prompts.</p>
 
@@ -108,7 +108,7 @@ readingTime: 7
 <p>Emphasize them by placing them earlier in the prompt or using phrases like "featuring prominently"</p>
 
 <h3>If unwanted elements appear:</h3>
-<p>Use negative prompts if your tool supports them: "no people," "without text," "exclude buildings"</p>
+<p>Some tools like Stable Diffusion have dedicated negative prompt fields where you can specify what to exclude. For other tools, try rephrasing your prompt to focus on what you want instead, or use phrases like "empty street" rather than "no people."</p>
 
 <p>Generate again with your refined prompt. Compare results. This iteration process is how you develop prompt-writing skills.</p>
 
@@ -151,7 +151,7 @@ readingTime: 7
 <p>AI models have attention limits. Place the most important elements first. Break complex scenes into simpler compositions.</p>
 
 <h3>"The image looks weird or distorted"</h3>
-<p>Add negative prompts like "no distortion, no deformation, anatomically correct." Regenerate several times since each generation is unique.</p>
+<p>Try adding quality terms like "well-proportioned, anatomically correct, high quality" to your prompt. Regenerate several times since each generation is unique. Some tools also have separate negative prompt fields for excluding unwanted elements.</p>
 
 <h3>"I can't get the exact style I want"</h3>
 <p>Research and reference specific artists, art movements, or famous photographs. "In the style of Ansel Adams" gives clearer direction than "professional photography."</p>

@@ -87,7 +87,9 @@ readingTime: 7
 
 <h3>The Guidance Scale Sweet Spot</h3>
 
-<p>When working with platforms that allow CFG (Classifier-Free Guidance) adjustment, a value between 4.0-5.0 typically produces the best balance between prompt adherence and natural variation. Too low, and the AI ignores your instructions. Too high, and images become oversaturated and artificial.</p>
+<p>When working with platforms that allow CFG (Classifier-Free Guidance) adjustment, optimal values depend heavily on your model and sampler choice. For standard diffusion models (SD 1.5, SDXL base), values between 7-11 often work well, while distilled or turbo variants (SDXL Turbo, LCM, Lightning, Hyper) perform best at much lower CFG values of 1-2. Too low, and the AI may ignore your instructions. Too high, and images become oversaturated and artificial.</p>
+
+<p><strong>Note:</strong> CFG recommendations vary significantly based on checkpoint, sampler, and whether you're using acceleration techniques like LCM-LoRA. Always test with your specific model—there is no universal "best" value.</p>
 
 <h3>Iterative Refinement</h3>
 
@@ -109,7 +111,7 @@ readingTime: 7
 <ul>
 <li><strong>Vague descriptors:</strong> Words like "nice," "cool," "good," or "beautiful" mean nothing to AI models. Replace them with specific visual descriptions.</li>
 <li><strong>Contradictory instructions:</strong> "Photorealistic cartoon" or "minimalist detailed" confuses the AI. Pick a direction and commit.</li>
-<li><strong>Overloading complexity:</strong> Research shows complex transformations attempting more than 3 major changes have a 68% failure rate. Break complex concepts into stages.</li>
+<li><strong>Overloading complexity:</strong> Attempting too many major changes in a single prompt often leads to unpredictable results. Break complex concepts into stages for better control.</li>
 <li><strong>Ignoring negative prompts:</strong> Half of prompt engineering is telling the AI what NOT to include.</li>
 </ul>
 

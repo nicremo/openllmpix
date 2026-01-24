@@ -117,25 +117,29 @@ readingTime: 9
 
 <p>Running AI image generators locally requires significant computational resources. Understanding hardware requirements helps users plan their setup.</p>
 
-<h3>FLUX: Optimized for Accessibility</h3>
+<h3>FLUX: High-End Hardware Required</h3>
 
-<p>FLUX is designed to be less demanding than many competitors. Its optimized architecture allows it to perform well on mid-range GPUs, making it more accessible for users without top-tier hardware. Key requirements:</p>
+<p>FLUX's 12-billion parameter architecture delivers impressive quality but demands substantial GPU resources. The model's size means full-precision inference is reserved for high-end hardware:</p>
 <ul>
-<li>8GB+ VRAM recommended</li>
-<li>Works on RTX 2060 and above</li>
-<li>Optimized fp8 implementations available</li>
-<li>Efficient memory management</li>
+<li>Full precision (FP16/BF16): 22-24GB VRAM minimum</li>
+<li>FP8/Q8 quantized: 16GB VRAM (RTX 4080, RTX 4090, RTX 3090)</li>
+<li>Q4/NF4 heavily quantized: 8GB VRAM possible with noticeable quality loss</li>
+<li>Recommended GPUs: RTX 4090 (24GB), RTX 3090 (24GB), RTX 4080 (16GB for FP8)</li>
 </ul>
 
-<h3>Stable Diffusion: Power-Hungry Performance</h3>
+<p>Note: Claims of FLUX running on 8GB cards refer to heavily quantized versions with CPU offloading, which significantly reduces quality and speed. For production-quality output, 16GB VRAM minimum is recommended with FP8, or 24GB+ for full precision.</p>
 
-<p>Stable Diffusion 3.5 generally requires more powerful hardware:</p>
+<h3>Stable Diffusion 3.5: Tiered Options</h3>
+
+<p>Stable Diffusion 3.5 offers better accessibility through its tiered model lineup:</p>
 <ul>
-<li>Minimum 8GB VRAM, 12GB+ recommended</li>
-<li>NVIDIA RTX series GPUs preferred</li>
-<li>More memory needed for higher resolutions</li>
-<li>Additional requirements for fine-tuned models</li>
+<li><strong>SD 3.5 Large:</strong> 18-24GB VRAM (comparable to FLUX)</li>
+<li><strong>SD 3.5 Medium:</strong> 10-12GB VRAM (more accessible)</li>
+<li><strong>SD 3.5 with FP8 quantization:</strong> ~11GB VRAM</li>
+<li>SDXL and SD 1.5: 6-8GB VRAM (most accessible)</li>
 </ul>
+
+<p>For users with mid-range GPUs (12-16GB), SD 3.5 Medium provides a more accessible entry point than FLUX, while older SD models like SDXL remain viable on 8GB cards.</p>
 
 <h2>Licensing and Commercial Use</h2>
 

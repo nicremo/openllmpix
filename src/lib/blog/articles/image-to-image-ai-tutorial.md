@@ -19,9 +19,9 @@ readingTime: 6
 
 <p>At its core, img2img works through a process called partial diffusion. When you submit an image to an img2img pipeline, the AI adds controlled amounts of noise to your original image, then progressively removes that noise while being guided by your text prompt. The amount of noise added, controlled by the denoise strength parameter, determines how much the final result will deviate from your input.</p>
 
-<p>A low denoise strength (around 0.2-0.4) produces subtle modifications that closely follow your original image. This is perfect for minor adjustments like lighting changes or slight style shifts. Higher denoise values (0.6-0.9) allow for more dramatic transformations while still maintaining the basic composition. Modern models like Flux 1.1 have introduced "Redux" capabilities that intelligently re-diffuse only the areas that need changing, producing remarkably coherent edits.</p>
+<p>A low denoise strength (around 0.2-0.4) produces subtle modifications that closely follow your original image. This is perfect for minor adjustments like lighting changes or slight style shifts. Higher denoise values (0.6-0.9) allow for more dramatic transformations while still maintaining the basic composition. Modern models like FLUX.1 have introduced "Redux" capabilities that intelligently re-diffuse only the areas that need changing, producing remarkably coherent edits.</p>
 
-<p>The latest generation of edit-first models, including Seedream 4.0 Edit and Flux Kontex, are specifically trained for img2img workflows. These models understand context better than their predecessors and can make targeted changes without affecting unrelated areas of your image.</p>
+<p>The latest generation of edit-first models, including Seedream 4.0 Edit and FLUX.1 Kontext, are specifically trained for img2img workflows. These models understand context better than their predecessors and can make targeted changes without affecting unrelated areas of your image.</p>
 
 <h2>Style Transfer: Transform Any Image Into Art</h2>
 
@@ -35,7 +35,7 @@ readingTime: 6
 
 <p>Inpainting is the img2img technique that gives you surgical precision over your edits. By masking specific areas of your image, you can direct the AI to modify only those regions while leaving the rest untouched. This is incredibly useful for removing unwanted objects, fixing damaged photos, replacing backgrounds, or adding new elements seamlessly.</p>
 
-<p>The latest Flux Fill model has achieved state-of-the-art inpainting results, producing edits that are virtually undetectable. The model understands context exceptionally well, automatically matching lighting, texture, and perspective to create cohesive results. Whether you're removing a photobomber from a vacation photo or replacing a product background for e-commerce, inpainting delivers professional results.</p>
+<p>The latest FLUX.1 Fill model has achieved state-of-the-art inpainting results, producing edits that are virtually undetectable. The model understands context exceptionally well, automatically matching lighting, texture, and perspective to create cohesive results. Whether you're removing a photobomber from a vacation photo or replacing a product background for e-commerce, inpainting delivers professional results.</p>
 
 <p>For best inpainting results, create masks that slightly overlap the areas you want to keep. This feathered edge helps the AI blend the new content seamlessly with the existing image. Also, write prompts that describe what should appear in the masked area, not what you're removing.</p>
 

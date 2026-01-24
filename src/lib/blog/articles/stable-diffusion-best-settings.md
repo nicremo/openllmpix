@@ -15,6 +15,8 @@ readingTime: 9
 
 <p>The <a href="https://openllmpix.com">OPENLLMPIX</a> team has spent countless hours testing parameter combinations across different models and use cases. These recommendations distill that experience into actionable guidance you can apply immediately.</p>
 
+<p><strong>Important:</strong> Sampler names, available samplers, and parameter behaviors vary across different UIs (Automatic1111, ComfyUI, Forge, etc.) and builds. Parameters like "Shift" may not exist in all interfaces. Always check your specific application and version for exact option names and default values—consult your UI's documentation or settings panel for available options.</p>
+
 <h2>Understanding Core Parameters</h2>
 
 <p>Before optimizing specific models, let's establish what each major parameter controls in the Stable Diffusion generation process.</p>

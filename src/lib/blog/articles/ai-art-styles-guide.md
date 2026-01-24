@@ -1,11 +1,11 @@
 ---
 slug: "ai-art-styles-guide"
-title: "AI Art Styles Guide 2025: Master Every Style from Anime to Oil Painting"
+title: "AI Art Styles Guide 2026: Master Every Style from Anime to Oil Painting"
 excerpt: "Discover the most popular AI art styles including anime, watercolor, cyberpunk, and photorealistic. Learn how to create stunning AI-generated artwork with expert tips and prompts."
 category: "guide"
 tags: ["ai art styles", "anime", "watercolor", "oil painting", "digital art", "ai image generation"]
 author: "OPENLLMPIX Team"
-publishedAt: "2025-01-20"
+publishedAt: "2026-01-20"
 readingTime: 6
 ---
 

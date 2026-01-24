@@ -23,7 +23,7 @@ readingTime: 8
 
 <h2>SD 1.5: The Workhorse That Refuses to Retire</h2>
 
-<p>Despite being the oldest major version, <strong>Stable Diffusion 1.5</strong> remains remarkably relevant in 2025. With approximately 983 million parameters and a native resolution of 512x512 pixels, SD 1.5 offers an unbeatable combination of speed and accessibility.</p>
+<p>Despite being the oldest major version, <strong>Stable Diffusion 1.5</strong> remains remarkably relevant in 2025. With approximately 983 million parameters (860M in the U-Net backbone plus 123M in the CLIP text encoder) and a native resolution of 512x512 pixels, SD 1.5 offers an unbeatable combination of speed and accessibility. <sup>[<a href="https://github.com/CompVis/stable-diffusion" target="_blank" rel="noopener">Source: CompVis GitHub</a>]</sup></p>
 
 <h3>Why SD 1.5 Still Matters</h3>
 
@@ -37,7 +37,7 @@ readingTime: 8
 
 <h2>SDXL: The Sweet Spot for Quality and Performance</h2>
 
-<p>Released in July 2023, <strong>SDXL (Stable Diffusion XL)</strong> represented a complete architectural overhaul. The base model expanded to 3.5 billion parameters with native 1024x1024 resolution, while a separate refiner model added unprecedented detail capabilities.</p>
+<p>Released in July 2023, <strong>SDXL (Stable Diffusion XL)</strong> represented a complete architectural overhaul. The base model expanded to 3.5 billion parameters with native 1024x1024 resolution, while a separate refiner model (6.6B parameters in the full ensemble pipeline) added unprecedented detail capabilities. <sup>[<a href="https://stability.ai/news/sdxl-09-stable-diffusion" target="_blank" rel="noopener">Source: Stability AI</a>]</sup></p>
 
 <h3>Technical Innovations in SDXL</h3>
 
@@ -57,9 +57,9 @@ readingTime: 8
 
 <h3>SD3 Breakthrough Features</h3>
 
-<p>Prompt adherence represents SD3's most significant advancement. Complex compositions with multiple subjects, specific spatial relationships, and detailed attribute requirements render accurately. Testing against Google's Parti Prompts evaluation suite shows SD3 consistently outperforming both SDXL and SD 1.5 in composition accuracy.</p>
+<p>Prompt adherence represents SD3's most significant advancement. Complex compositions with multiple subjects, specific spatial relationships, and detailed attribute requirements render accurately. According to the official SD3 research paper "Scaling Rectified Flow Transformers for High-Resolution Image Synthesis", human evaluators assessed SD3's 8B model against current state-of-the-art models using the Parti Prompts benchmark (Yu et al., 2022). SD3 performed favorably across visual quality, prompt following, and typography generation categories. <sup>[<a href="https://arxiv.org/abs/2403.03206" target="_blank" rel="noopener">Source: arXiv:2403.03206</a>]</sup></p>
 
-<p>The SD3.5 Large variant scales to 8 billion parameters, delivering unprecedented detail in imaginative creations. However, this power comes with trade-offs: rendering times can exceed one minute, and hardware requirements climb substantially.</p>
+<p>The SD3.5 Large variant scales to 8.1 billion parameters, delivering unprecedented detail in imaginative creations. However, this power comes with trade-offs: rendering times can exceed one minute, and hardware requirements climb substantially. <sup>[<a href="https://stability.ai/news/introducing-stable-diffusion-3-5" target="_blank" rel="noopener">Source: Stability AI</a>]</sup></p>
 
 <h3>When to Choose SD3</h3>
 
