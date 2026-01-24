@@ -48,6 +48,7 @@ export function getCategoryLabel(category: BlogCategory): string {
     release: "Release",
     guide: "Guide",
     showcase: "Showcase",
+    comparison: "Comparison",
   };
   return labels[category];
 }
@@ -62,6 +63,7 @@ export function getCategoryColor(category: BlogCategory): {
     release: { bg: "rgba(168, 85, 247, 0.15)", text: "#a855f7" },
     guide: { bg: "rgba(245, 158, 11, 0.15)", text: "#f59e0b" },
     showcase: { bg: "rgba(236, 72, 153, 0.15)", text: "#ec4899" },
+    comparison: { bg: "rgba(99, 102, 241, 0.15)", text: "#6366f1" },
   };
   return colors[category];
 }

@@ -1,4 +1,5 @@
 import type { BlogPost } from "./types";
+import { getMarkdownBlogPosts } from "./markdown-loader";
 
 export const blogPosts: BlogPost[] = [
   {
@@ -185,14 +186,39 @@ export const blogPosts: BlogPost[] = [
   },
 ];
 
+// Cached combined posts
+let cachedPosts: BlogPost[] | null = null;
+
+function getCombinedPosts(): BlogPost[] {
+  if (cachedPosts) return cachedPosts;
+
+  const markdownPosts = getMarkdownBlogPosts();
+  const allPosts = [...markdownPosts, ...blogPosts];
+
+  // Remove duplicates by slug (markdown takes precedence)
+  const seenSlugs = new Set<string>();
+  cachedPosts = allPosts.filter((post) => {
+    if (seenSlugs.has(post.slug)) return false;
+    seenSlugs.add(post.slug);
+    return true;
+  });
+
+  // Sort by date (newest first)
+  cachedPosts.sort((a, b) =>
+    new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+  );
+
+  return cachedPosts;
+}
+
 export function getBlogPost(slug: string): BlogPost | undefined {
-  return blogPosts.find((post) => post.slug === slug);
+  return getCombinedPosts().find((post) => post.slug === slug);
 }
 
 export function getAllBlogPosts(): BlogPost[] {
-  return blogPosts;
+  return getCombinedPosts();
 }
 
 export function getFeaturedPosts(): BlogPost[] {
-  return blogPosts.filter((post) => post.featured);
+  return getCombinedPosts().filter((post) => post.featured);
 }
