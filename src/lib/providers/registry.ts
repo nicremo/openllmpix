@@ -13,15 +13,9 @@ export const PROVIDERS: Record<ProviderId, ProviderConfig> = {
     helpText: "Get your API key from OpenRouter",
     baseUrl: "https://openrouter.ai/api/v1",
     supportsModelListing: true,
-    defaultModel: "google/gemini-2.5-flash-image-preview:free",
+    defaultModel: "google/gemini-2.5-flash-image-preview",
     models: [
       // === Google Gemini ===
-      {
-        id: "google/gemini-2.5-flash-image-preview:free",
-        name: "Gemini 2.5 Flash Image (Free)",
-        description: "Free tier with rate limits",
-        capabilities: { textToImage: true, imageToImage: true },
-      },
       {
         id: "google/gemini-2.5-flash-image-preview",
         name: "Gemini 2.5 Flash Image Preview",
@@ -186,7 +180,7 @@ export const MODEL_ID_MAPPING: Record<ProviderId, Record<string, string>> = {
     // Google Gemini
     "nano-banana-pro": "google/gemini-3-pro-image-preview",
     "gemini-2.5-flash-image": "google/gemini-2.5-flash-image",
-    "gemini-2.0-flash-exp": "google/gemini-2.0-flash-exp:free",
+    "gemini-2.0-flash-exp": "google/gemini-2.0-flash-exp",
     // FLUX.2 (for img2img support)
     "flux.2-flex": "black-forest-labs/flux.2-flex",
     // OpenAI
