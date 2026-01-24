@@ -1,4 +1,4 @@
-export type BlogCategory = "tutorial" | "news" | "release" | "guide" | "showcase";
+export type BlogCategory = "tutorial" | "news" | "release" | "guide" | "showcase" | "comparison";
 
 export interface BlogAuthor {
   name: string;
@@ -34,6 +34,7 @@ export interface BlogCategoryInfo {
 export const BLOG_CATEGORIES: BlogCategoryInfo[] = [
   { id: "tutorial", name: "Tutorials", icon: "📚" },
   { id: "guide", name: "Guides", icon: "📖" },
+  { id: "comparison", name: "Comparisons", icon: "⚖️" },
   { id: "news", name: "News", icon: "📰" },
   { id: "release", name: "Releases", icon: "🚀" },
   { id: "showcase", name: "Showcases", icon: "✨" },
