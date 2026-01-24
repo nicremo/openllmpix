@@ -13,6 +13,16 @@ import { getClientAdapter } from "@/lib/providers/client-adapters";
 import type { ProviderId, GenerateRequest } from "@/lib/providers/types";
 import { useImageUpload } from "@/hooks/useImageUpload";
 import { saveJobs, loadJobs, clearJobs, saveChatSession, loadChatSession, type ChatSession } from "@/lib/storage";
+import {
+  trackImageGenerated,
+  trackModelSelected,
+  trackProviderConfigured,
+  trackModeChanged,
+  trackLightboxOpened,
+  trackImageDownloaded,
+  trackSettingsOpened,
+  trackAspectRatioChanged,
+} from "@/lib/analytics";
 
 type Mode = "text-to-image" | "image-to-image";
 type AspectRatio = "1:1" | "16:9" | "9:16" | "4:3" | "3:4";
@@ -280,6 +290,7 @@ export default function Home() {
   const handleApiKeySave = useCallback((config: ApiKeyConfig) => {
     setApiConfig(config);
     setShowApiKeyModal(false);
+    trackProviderConfigured({ provider: config.provider });
   }, []);
 
   // Generate
@@ -395,6 +406,18 @@ export default function Home() {
       .then((results) => {
         const hasErrors = results.some((r) => r.status === 'rejected');
         const allFailed = results.every((r) => r.status === 'rejected');
+        const successCount = results.filter((r) => r.status === 'fulfilled').length;
+
+        // Track generation
+        trackImageGenerated({
+          model: selectedModel,
+          provider: apiConfig.provider,
+          mode,
+          aspectRatio,
+          numberOfImages,
+          success: !allFailed,
+          error: allFailed ? "All images failed to generate" : undefined,
+        });
 
         // Update job status
         setJobs((prev) =>
@@ -430,7 +453,11 @@ export default function Home() {
     [handleGenerate]
   );
 
-  const handleDownload = useCallback((imageUrl: string, index: number) => {
+  const handleDownload = useCallback((imageUrl: string, index: number, job?: GenerationJob) => {
+    trackImageDownloaded({
+      model: job?.model || "unknown",
+      mode: job?.mode || "text-to-image",
+    });
     const link = document.createElement("a");
     link.href = imageUrl;
     link.download = `generated-${Date.now()}-${index}.png`;
@@ -444,6 +471,7 @@ export default function Home() {
     job: GenerationJob,
     imageIndex: number
   ) => {
+    trackLightboxOpened();
     setLightboxData({
       isOpen: true,
       imageUrl,
@@ -783,7 +811,10 @@ export default function Home() {
         </div>
 
         <button
-          onClick={() => setShowApiKeyModal(true)}
+          onClick={() => {
+            trackSettingsOpened();
+            setShowApiKeyModal(true);
+          }}
           className="text-xs px-3 py-1.5 rounded-md border flex items-center gap-2"
           style={{
             borderColor: "var(--border-default)",
@@ -1270,7 +1301,7 @@ export default function Home() {
                                         <button
                                           onClick={(e) => {
                                             e.stopPropagation();
-                                            handleDownload(slot.imageUrl!, index);
+                                            handleDownload(slot.imageUrl!, index, job);
                                           }}
                                           className="p-2 rounded-lg"
                                           style={{ background: "var(--accent-primary)", color: "var(--accent-foreground)" }}

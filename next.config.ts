@@ -14,7 +14,8 @@ const nextConfig: NextConfig = {
       // - 'unsafe-eval': Required for Next.js development mode (hot reload)
       // - vercel.live: Vercel Live Feedback
       // - va.vercel-scripts.com: Vercel Analytics
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://va.vercel-scripts.com",
+      // - eu-assets.i.posthog.com: PostHog Analytics (EU)
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://va.vercel-scripts.com https://eu-assets.i.posthog.com",
 
       // style-src: CSS sources
       // - 'self': Own domain stylesheets
@@ -36,7 +37,8 @@ const nextConfig: NextConfig = {
       // - https://api.fal.ai: fal.ai API
       // - vercel.live: Vercel Live Feedback WebSocket
       // - vitals.vercel-insights.com: Vercel Speed Insights
-      "connect-src 'self' https://openrouter.ai https://generativelanguage.googleapis.com https://fal.run https://api.fal.ai https://vercel.live wss://ws-us3.pusher.com https://vitals.vercel-insights.com",
+      // - eu.i.posthog.com: PostHog Analytics API (EU)
+      "connect-src 'self' https://openrouter.ai https://generativelanguage.googleapis.com https://fal.run https://api.fal.ai https://vercel.live wss://ws-us3.pusher.com https://vitals.vercel-insights.com https://eu.i.posthog.com",
 
       // font-src: Font sources
       // - 'self': Own domain fonts
