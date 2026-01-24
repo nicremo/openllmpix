@@ -37,14 +37,39 @@ export async function GET(request: NextRequest) {
 
     let models: ProviderModel[] = [];
     let source: "live" | "static" = "static";
+    const staticModels = providerConfig.models;
 
     // Try to get live models if the provider supports it
     if (providerConfig.supportsModelListing) {
       try {
         const adapter = getAdapter(providerId);
         if (adapter.supportsModelListing()) {
-          models = await adapter.listModels(apiKey || "");
-          source = "live";
+          const liveModels = await adapter.listModels(apiKey || "");
+
+          // Null guard - ensure we got a valid array
+          if (!liveModels || !Array.isArray(liveModels)) {
+            throw new Error("Invalid response from listModels");
+          }
+
+          // Only use live models if we got at least as many as the static registry
+          // This prevents the dashboard from showing fewer models than expected
+          // when the live API filter is too restrictive
+          if (liveModels.length >= staticModels.length) {
+            models = liveModels;
+            source = "live";
+          } else {
+            // Merge: Use static models as base, update with live data where available
+            const modelMap = new Map<string, ProviderModel>();
+
+            // Add static models first
+            staticModels.forEach(model => modelMap.set(model.id, model));
+
+            // Override/add with live models (live data takes priority)
+            liveModels.forEach(model => modelMap.set(model.id, model));
+
+            models = Array.from(modelMap.values());
+            source = liveModels.length > 0 ? "live" : "static";
+          }
         }
       } catch {
         // Fall back to static models on error (silently)
@@ -53,7 +78,7 @@ export async function GET(request: NextRequest) {
 
     // Fall back to static models if live fetch failed or not supported
     if (models.length === 0) {
-      models = providerConfig.models;
+      models = staticModels;
       source = "static";
     }
 
