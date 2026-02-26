@@ -4,6 +4,8 @@ export const MODEL_CATEGORIES: Record<string, { name: string; icon: string }> = 
   "black-forest-labs": { name: "FLUX.2", icon: "⚡" },
   "openai": { name: "OpenAI", icon: "🤖" },
   "bytedance-seed": { name: "ByteDance", icon: "🌱" },
+  "ideogram-ai": { name: "Ideogram", icon: "🔤" },
+  "recraft-ai": { name: "Recraft", icon: "🎨" },
   "sourceful": { name: "Other", icon: "📦" },
 };
 

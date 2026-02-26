@@ -26,11 +26,30 @@ export class ClientFalAdapter extends ClientProviderAdapter {
   readonly supportsCORS = true;
 
   async generate(request: GenerateRequest): Promise<GenerateResult> {
-    // Parse aspect ratio to dimensions
     const dimensions = this.getImageDimensions(request.aspectRatio);
+    const model = request.model;
 
     // fal.ai uses different endpoints for different models
-    const modelPath = request.model.replace("fal-ai/", "");
+    const modelPath = model.replace("fal-ai/", "");
+
+    // Build adaptive request body - not all models accept the same params
+    const body: Record<string, unknown> = {
+      prompt: request.prompt,
+      num_images: request.numberOfImages || 1,
+    };
+
+    if (model.includes("flux")) {
+      body.image_size = { width: dimensions.width, height: dimensions.height };
+      body.num_inference_steps = model.includes("schnell") ? 4 : 28;
+      body.enable_safety_checker = true;
+      if (request.mode === "image-to-image" && request.referenceImages?.[0]) {
+        body.image_url = request.referenceImages[0];
+      }
+    } else if (model.includes("ideogram")) {
+      body.aspect_ratio = this.toAspectRatioString(request.aspectRatio);
+    } else if (model.includes("recraft") || model.includes("seedream")) {
+      body.image_size = { width: dimensions.width, height: dimensions.height };
+    }
 
     // Direct CORS call to fal.ai
     const response = await fetch(`https://fal.run/fal-ai/${modelPath}`, {
@@ -39,16 +58,7 @@ export class ClientFalAdapter extends ClientProviderAdapter {
         "Authorization": `Key ${request.apiKey}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        prompt: request.prompt,
-        image_size: {
-          width: dimensions.width,
-          height: dimensions.height,
-        },
-        num_images: request.numberOfImages || 1,
-        num_inference_steps: this.getSteps(request.model),
-        enable_safety_checker: true,
-      }),
+      body: JSON.stringify(body),
     });
 
     if (!response.ok) {
@@ -92,7 +102,6 @@ export class ClientFalAdapter extends ClientProviderAdapter {
   }
 
   private getImageDimensions(aspectRatio: string): { width: number; height: number } {
-    // Standard dimensions for different aspect ratios
     const dimensions: Record<string, { width: number; height: number }> = {
       "1:1": { width: 1024, height: 1024 },
       "16:9": { width: 1344, height: 768 },
@@ -103,11 +112,8 @@ export class ClientFalAdapter extends ClientProviderAdapter {
     return dimensions[aspectRatio] || dimensions["1:1"];
   }
 
-  private getSteps(model: string): number {
-    // Schnell is optimized for 4 steps, others use more
-    if (model.includes("schnell")) {
-      return 4;
-    }
-    return 28;
+  private toAspectRatioString(aspectRatio: string): string {
+    // Ideogram accepts aspect_ratio as a string like "1:1", "16:9"
+    return aspectRatio || "1:1";
   }
 }
