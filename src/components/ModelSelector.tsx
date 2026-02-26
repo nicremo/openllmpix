@@ -89,20 +89,14 @@ export default function ModelSelector({
     loadModels();
   }, [loadModels]);
 
-  // Must be before any early returns (React Hooks rules)
-  const selectedModelInfo = useMemo(
-    () => models.find((m) => m.id === selectedModel),
-    [models, selectedModel]
-  );
-
   // Loading state
   if (loading) {
     return (
       <div className="space-y-2">
-        <span className="block text-xs font-medium text-[var(--text-secondary)]">
+        <span className="block text-[11px] font-semibold tracking-wide uppercase text-[var(--text-tertiary)]">
           Model
         </span>
-        <div className="h-10 rounded-lg animate-pulse bg-[var(--bg-base)]" />
+        <div className="h-10 rounded-xl animate-pulse bg-[var(--bg-elevated)] border border-[var(--border-default)]" />
       </div>
     );
   }
@@ -110,11 +104,18 @@ export default function ModelSelector({
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <span className="block text-xs font-medium text-[var(--text-secondary)]">
-          Model
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="block text-[11px] font-semibold tracking-wide uppercase text-[var(--text-tertiary)]">
+            Model
+          </span>
+          {provider === "openrouter" && apiKey && (
+            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-500 border border-blue-500/20 uppercase tracking-widest">
+              OpenRouter Active
+            </span>
+          )}
+        </div>
         {isLive && (
-          <span className="text-xs px-1.5 py-0.5 rounded bg-[var(--bg-elevated)] text-[var(--success)]">
+          <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
             Live
           </span>
         )}
@@ -128,16 +129,9 @@ export default function ModelSelector({
       />
 
       {error && (
-        <p className="text-xs text-[var(--text-tertiary)]">
+        <p className="text-[11px] text-[var(--text-tertiary)] flex items-center gap-1.5 mt-1">
+          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 opacity-70" />
           {error} - Using cached models
-        </p>
-      )}
-
-      {selectedModelInfo?.description && (
-        <p className="text-xs text-[var(--text-tertiary)]">
-          {selectedModelInfo.description.length > 80
-            ? selectedModelInfo.description.slice(0, 80) + "..."
-            : selectedModelInfo.description}
         </p>
       )}
     </div>
