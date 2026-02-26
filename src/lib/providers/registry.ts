@@ -96,7 +96,7 @@ export const PROVIDERS: Record<ProviderId, ProviderConfig> = {
   "google-ai-studio": {
     id: "google-ai-studio",
     name: "Google AI Studio",
-    description: "Direct access to Gemini, Imagen and Nano Banana models",
+    description: "Direct access to Gemini and Imagen models",
     category: "image",
     apiKeyPlaceholder: "AIza...",
     apiKeyPrefix: "AIza",
@@ -104,24 +104,12 @@ export const PROVIDERS: Record<ProviderId, ProviderConfig> = {
     helpText: "Get your API key from Google AI Studio",
     baseUrl: "https://generativelanguage.googleapis.com/v1beta",
     supportsModelListing: false,
-    defaultModel: "nano-banana-pro",
+    defaultModel: "gemini-2.5-flash-image",
     models: [
-      {
-        id: "nano-banana-pro",
-        name: "Nano Banana Pro",
-        description: "Google's most advanced image model built on Gemini 3 Pro",
-        capabilities: { textToImage: true, imageToImage: true },
-      },
       {
         id: "gemini-2.5-flash-image",
         name: "Nano Banana",
         description: "Fast Gemini 2.5 Flash model for quick image generation",
-        capabilities: { textToImage: true, imageToImage: true },
-      },
-      {
-        id: "gemini-2.0-flash-exp",
-        name: "Gemini 2.0 Flash Experimental",
-        description: "Fast multimodal model with native image generation",
         capabilities: { textToImage: true, imageToImage: true },
       },
       {
@@ -206,7 +194,7 @@ export const PROVIDERS: Record<ProviderId, ProviderConfig> = {
         capabilities: { textToImage: true, imageToImage: false },
       },
       {
-        id: "fal-ai/recraft-v3",
+        id: "fal-ai/recraft/v3",
         name: "Recraft V3",
         description: "Vektorgrafik & Design ~$0.04/img",
         capabilities: { textToImage: true, imageToImage: false },
